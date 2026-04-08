@@ -1,4 +1,4 @@
-# 🎓 Emmerence AI Career Path Advisor
+# Emmerence AI Career Path Advisor
 
 > An enterprise-grade, AI-driven career matching and analysis system designed for the Emmerence Thesis Project. 
 
@@ -6,7 +6,7 @@ This repository contains the full architecture for the AI Career Path Advisor, c
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 - **Backend Framework**: Python / Django 5 / Django REST Framework (DRF)
 - **Database**: PostgreSQL (Relational schema modeling including polymorphic inheritance)
@@ -15,7 +15,7 @@ This repository contains the full architecture for the AI Career Path Advisor, c
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 The monorepo is split into distinct environments to maintain scalable isolation:
 
@@ -31,7 +31,7 @@ career-advisor/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 Follow these instructions to get the development environment running locally.
 
@@ -92,7 +92,7 @@ python manage.py runserver
 
 ---
 
-## 📖 API Documentation
+## API Documentation
 
 This project utilizes `drf-spectacular` to autogenerate pristine API blueprints. Once your development server is running (`127.0.0.1:8000`), you can test the entire API visually before hooking up the frontend:
 
@@ -101,7 +101,7 @@ This project utilizes `drf-spectacular` to autogenerate pristine API blueprints.
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 All API logic is protected by `IsAuthenticated` global checks. To interact with the system via Swagger or Insomnia/Postman:
 1. Send a POST request mapping to `/api/token/` strictly sending a valid `email` and `password`.
