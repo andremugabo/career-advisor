@@ -22,9 +22,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from core.views import health_check
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    
+    # Health Check
+    path("api/health/", health_check, name="health_check"),
     
     # Swagger API Endpoints
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -33,4 +37,11 @@ urlpatterns = [
     # Global JWT Endpoints
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # AI Recommendation Engine Endpoints
+    path("api/", include("apps.recommendations.urls")),
+
+    # Profiles Endpoints
+    path("api/", include("apps.profiles.urls")),
 ]
+
