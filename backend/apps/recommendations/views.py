@@ -126,5 +126,13 @@ class RecommendationViewSet(viewsets.ViewSet):
                 )
 
         history_records = MatchResult.objects.filter(student=student).order_by('-timestamp')
+        
+        from core.pagination import StandardResultsSetPagination
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(history_records, request, view=self)
+        if page is not None:
+            serializer = MatchResultSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         serializer = MatchResultSerializer(history_records, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
