@@ -43,5 +43,20 @@ urlpatterns = [
 
     # Profiles Endpoints
     path("api/", include("apps.profiles.urls")),
+
+    # Skills Endpoints
+    path("api/", include("apps.skills.urls")),
+
+    # Internships Endpoints
+    path("api/", include("apps.internships.urls")),
+
+    # Applications Endpoints
+    path("api/", include("apps.applications.urls")),
+
+    # Advisors Endpoints
+    path("api/", include("apps.advisors.urls")),
+
+    # Authentication Endpoints
+    path("api/", include("apps.authentication.urls")),
 ]
 
