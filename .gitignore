@@ -37,3 +37,22 @@ db.sqlite3
 local_settings.py
 static/
 media/
+
+# Datasets
+backend/dataset/*.sql
+backend/dataset/*.csv
+backend/dataset/*.xlsx
+backend/dataset/*.zip
+
+# Frontend / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnp
+frontend/.pnp.js
+
