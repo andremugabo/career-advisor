@@ -24,6 +24,7 @@ class Certification(AbstractAuditEntity):
     name = models.CharField(max_length=255)
     provider = models.CharField(max_length=255)
     target_cluster = models.ForeignKey('careers.CareerCluster', on_delete=models.SET_NULL, null=True, related_name='certifications')
+    skills = models.ManyToManyField(Skill, related_name='certifications', blank=True)
 
     def __str__(self):
         return self.name
