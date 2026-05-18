@@ -1,19 +1,25 @@
-/* Core Design Variables */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Core Design Variables extracted from reference image */
 :root {
-  --bg-primary: #0a0b10;
-  --bg-gradient: radial-gradient(circle at 50% 50%, #161233 0%, #0a0b10 100%);
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-hover: rgba(255, 255, 255, 0.07);
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --color-indigo: #6366f1;
-  --color-purple: #a855f7;
-  --color-emerald: #10b981;
-  --color-rose: #f43f5e;
-  --glow-indigo: 0 8px 32px 0 rgba(99, 102, 241, 0.15);
-  --glow-purple: 0 8px 32px 0 rgba(168, 85, 247, 0.15);
+  --bg-primary: #F8F1F1;
+  --bg-white: #ffffff;
+  --color-light-blue: #AFD3E2;
+  --color-med-blue: #19A7CE;
+  --color-dark-blue: #146C94;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(20, 108, 148, 0.1);
+  --glass-hover: rgba(255, 255, 255, 1);
+  
+  --glow-primary: 0 4px 14px 0 rgba(25, 167, 206, 0.15);
+  --glow-heavy: 0 8px 24px 0 rgba(20, 108, 148, 0.2);
 }
 
 /* Reset & Base Styles */
@@ -25,7 +31,6 @@
 
 body {
   background: var(--bg-primary);
-  background-image: var(--bg-gradient);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
@@ -37,6 +42,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
+  color: var(--color-dark-blue);
   letter-spacing: -0.02em;
 }
 
@@ -45,17 +51,17 @@ h1, h2, h3, h4, h5, h6 {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
+  background: var(--color-light-blue);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--color-med-blue);
 }
 
-/* Glassmorphism Card Utility */
+/* Glassmorphism Card Utility (Updated for Light Theme) */
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -63,19 +69,20 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
   background: var(--glass-hover);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-light-blue);
   transform: translateY(-4px);
-  box-shadow: var(--glow-indigo);
+  box-shadow: var(--glow-primary);
 }
 
 /* Button Premium styling */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-indigo) 0%, var(--color-purple) 100%);
+  background: var(--color-med-blue);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -84,13 +91,13 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 14px rgba(25, 167, 206, 0.3);
 }
 
 .btn-primary:hover {
+  background: var(--color-dark-blue);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
-  opacity: 0.95;
+  box-shadow: var(--glow-heavy);
 }
 
 .btn-primary:active {
@@ -100,8 +107,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Input Premium styling */
 .glass-input {
   width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-white);
+  border: 1px solid rgba(20, 108, 148, 0.2);
   border-radius: 12px;
   padding: 14px 16px;
   color: var(--text-primary);
@@ -111,8 +118,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .glass-input:focus {
   outline: none;
-  border-color: var(--color-indigo);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--color-med-blue);
+  box-shadow: 0 0 0 3px rgba(25, 167, 206, 0.15);
 }
 
 /* Layout container classes */
