@@ -58,5 +58,9 @@ urlpatterns = [
 
     # Authentication Endpoints
     path("api/", include("apps.authentication.urls")),
+
+    # Admin Management Endpoints
+    path("api/", include("apps.users.urls")),
+    path("api/", include("apps.audit.urls")),
 ]
 
