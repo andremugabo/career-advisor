@@ -8,13 +8,17 @@ from apps.applications.serializers import ApplicationSerializer
 class ApplicationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ApplicationSerializer
-    queryset = Application.objects.all()
+    queryset = Application.objects.all().order_by('-created_at')
 
     def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return Application.objects.all().select_related('internship', 'internship__cluster', 'student', 'student__user').order_by('-applied_at')
+            
         # Enforce that students only see their own applications
         try:
-            student = Student.objects.get(user=self.request.user)
-            return Application.objects.filter(student=student).select_related('internship', 'internship__cluster')
+            student = Student.objects.get(user=user)
+            return Application.objects.filter(student=student).select_related('internship', 'internship__cluster').order_by('-applied_at')
         except Student.DoesNotExist:
             return Application.objects.none()
 

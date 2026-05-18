@@ -7,14 +7,15 @@ from apps.skills.serializers import (
     SkillSerializer, StudentSkillSerializer,
     CertificationSerializer, StudentCertificationSerializer
 )
+from apps.users.views import IsAdminOrReadOnly
 
 class SkillViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
     serializer_class = SkillSerializer
-    queryset = Skill.objects.all()
+    queryset = Skill.objects.all().order_by('-created_at')
 
     def get_queryset(self):
-        queryset = Skill.objects.all()
+        queryset = Skill.objects.all().order_by('-created_at')
         search_query = self.request.query_params.get('search', None) or self.request.GET.get('search', None)
         if search_query:
             queryset = queryset.filter(name__icontains=search_query)
@@ -81,9 +82,9 @@ class SkillViewSet(viewsets.ModelViewSet):
 
 
 class CertificationViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
     serializer_class = CertificationSerializer
-    queryset = Certification.objects.all()
+    queryset = Certification.objects.all().order_by('-created_at')
 
     @action(detail=False, methods=['get'], url_path='my')
     def my_certifications(self, request):

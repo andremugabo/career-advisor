@@ -4,11 +4,12 @@ from apps.internships.models import Internship
 from apps.profiles.models import Student
 from apps.internships.serializers import InternshipSerializer
 from ai.recommenders.career_recommender import CareerRecommender
+from apps.users.views import IsAdminOrReadOnly
 
-class InternshipViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+class InternshipViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAdminOrReadOnly]
     serializer_class = InternshipSerializer
-    queryset = Internship.objects.all()
+    queryset = Internship.objects.all().order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
