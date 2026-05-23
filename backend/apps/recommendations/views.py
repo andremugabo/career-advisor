@@ -54,10 +54,8 @@ class RecommendationViewSet(viewsets.ViewSet):
                         status=status.HTTP_404_NOT_FOUND
                     )
             else:
-                return Response(
-                    {"error": "You do not have a student profile associated with this account."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                # No student profile; return empty list for recommendations
+                return Response([], status=status.HTTP_200_OK)
 
         # Run AI Recommender
         recommendations = CareerRecommender.get_recommendations(student, top_n=5)
