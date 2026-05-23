@@ -14,10 +14,12 @@ export default function Dashboard() {
   const [selectedCareer, setSelectedCareer] = useState<any | null>(null);
   const [student, setStudent] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUsingMocks, setIsUsingMocks] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
       setIsLoading(true);
+      setIsUsingMocks(false);
       try {
         const [profileData, recsData] = await Promise.all([
           studentService.getProfile(),
@@ -27,6 +29,7 @@ export default function Dashboard() {
         setRecommendations(recsData.results || []);
         if (recsData.results?.length > 0) setSelectedCareer(recsData.results[0]);
       } catch (err: any) {
+        setIsUsingMocks(true);
         // Fallback to beautiful mock data to prevent UI crash when endpoints fail
         setStudent({
           full_name: 'Alex Johnson',
@@ -75,6 +78,23 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {isUsingMocks && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-5 py-4 rounded-2xl flex items-center justify-between shadow-sm animate-fade-in shrink-0">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-amber-600 shrink-0 animate-pulse" size={24} />
+            <div className="text-sm">
+              <span className="font-bold">Offline Diagnostics Active:</span> The advisory system is currently unable to communicate with the Django AI engine. Displaying simulated local sandbox data.
+            </div>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 transition-colors px-3 py-1.5 rounded-lg border border-amber-300 shadow-sm whitespace-nowrap"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
       {/* Row 1: Profile Summary & Matching Overview Chart */}
       <div className="grid lg:grid-cols-[1fr_1.5fr] gap-8">
         {/* Student Profile Card */}
