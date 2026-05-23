@@ -14,11 +14,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, isOpen = false, setIsOpe
   const navigate = useNavigate();
 
   const navLinks = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Student', 'Advisor', 'Admin'] },
+    { name: 'Dashboard', path: role === 'Admin' ? '/admin/dashboard' : '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Student', 'Advisor', 'Admin'] },
     { name: 'My Profile', path: '/profile', icon: <Settings className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Skills & Certs', path: '/skills', icon: <BookOpen className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Internships', path: '/internships', icon: <Briefcase className="w-5 h-5" />, roles: ['Student'] },
-    { name: 'Students', path: '/students', icon: <Users className="w-5 h-5" />, roles: ['Advisor', 'Admin'] },
+    { name: 'Students', path: '/students', icon: <Users className="w-5 h-5" />, roles: ['Advisor'] },
     { name: 'User Management', path: '/admin/users', icon: <Users className="w-5 h-5" />, roles: ['Admin'] },
     { name: 'App & Jobs', path: '/admin/internships', icon: <Briefcase className="w-5 h-5" />, roles: ['Admin'] },
     { name: 'Global Content', path: '/admin/content', icon: <Code className="w-5 h-5" />, roles: ['Admin'] },
