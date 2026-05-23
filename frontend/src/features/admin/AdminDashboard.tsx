@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Button, Pagination } from '../../components';
 import { adminService } from '../../services';
 import { notify } from '../../lib/toast';
