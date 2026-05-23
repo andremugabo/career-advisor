@@ -1,10 +1,11 @@
 export type Role = 'Student' | 'Advisor' | 'Admin';
 
 export interface User {
-  id: number;
+  id: number | string;
   email: string;
   role: Role;
   is_active: boolean;
+  mfa_enabled?: boolean;
 }
 
 export interface StudentProfile {
@@ -15,6 +16,7 @@ export interface StudentProfile {
   gpa: number;
   current_year: number;
   bio: string;
+  skills: string[];
 }
 
 export interface Skill {
@@ -39,6 +41,7 @@ export interface Recommendation {
   required_education: string;
   work_experience: string;
   on_the_job_training: string;
+  recommended_certs: { id: number; name: string; provider: string; }[];
 }
 
 export interface Internship {
