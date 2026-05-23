@@ -1,8 +1,10 @@
 import { apiFetch } from '../api/client';
 
 export interface LoginResponse {
-  access: string;
-  refresh: string;
+  access?: string;
+  refresh?: string;
+  mfa_required?: boolean;
+  email?: string;
 }
 
 export const authService = {
@@ -10,6 +12,13 @@ export const authService = {
     return apiFetch<LoginResponse>('/auth/login/', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  mfaVerify: async (email: string, token: string) => {
+    return apiFetch<LoginResponse>('/auth/mfa-verify/', {
+      method: 'POST',
+      body: JSON.stringify({ email, token }),
     });
   },
   
@@ -32,5 +41,9 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  getPrograms: async () => {
+    return apiFetch<any[]>('/auth/programs/');
   }
 };
