@@ -6,14 +6,21 @@ export const adminService = {
     return apiFetch<PaginatedResponse<User>>(`/users/?page=${page}`);
   },
   
-  updateUserRole: async (userId: string, newRole: string) => {
+  updateUserRole: async (userId: number | string, newRole: string) => {
     return apiFetch<User>(`/users/${userId}/`, {
       method: 'PATCH',
       body: JSON.stringify({ role: newRole })
     });
   },
+
+  toggleUserActive: async (userId: number | string, isActive: boolean) => {
+    return apiFetch<User>(`/users/${userId}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_active: !isActive })
+    });
+  },
   
-  deleteUser: async (userId: string) => {
+  deleteUser: async (userId: number | string) => {
     return apiFetch<any>(`/users/${userId}/`, {
       method: 'DELETE'
     });
@@ -23,7 +30,12 @@ export const adminService = {
     return apiFetch<PaginatedResponse<any>>(`/audit/?page=${page}`);
   },
 
-  // Internships Management
+  updateUser: async (userId: number | string, data: Partial<User>) => {
+    return apiFetch<User>(`/users/${userId}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  },
   getInternships: async (page = 1) => {
     return apiFetch<PaginatedResponse<any>>(`/internships/?page=${page}`);
   },
