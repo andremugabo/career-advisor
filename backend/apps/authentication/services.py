@@ -61,3 +61,30 @@ def send_password_reset_email(reset_token):
         logger.info(f"Password reset OTP successfully sent to {user.email}")
     except Exception as e:
         logger.error(f"Error sending password reset email to {user.email}: {e}")
+
+
+def send_mfa_email(mfa_token):
+    """
+    Sends a secure 6-digit MFA OTP code to the user.
+    """
+    try:
+        user = mfa_token.user
+        subject = f"Your Identity Verification Code: {mfa_token.token} 🔒"
+        context = {
+            'otp_code': mfa_token.token,
+        }
+        html_content = render_to_string('authentication/mfa_email.html', context)
+        text_content = strip_tags(html_content)
+        
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email]
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+        logger.info(f"MFA OTP successfully sent to {user.email}")
+    except Exception as e:
+        logger.error(f"Error sending MFA email to {user.email}: {e}")
+
