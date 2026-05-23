@@ -23,6 +23,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------
         # Create users
         student_user, _ = User.objects.get_or_create(email='test_student_api@auca.ac.rw', defaults={'role': 'Student'})
+        student_user.role = 'Student'
         student_user.set_password('studentpass123')
         student_user.save()
 
@@ -31,6 +32,7 @@ class Command(BaseCommand):
         Application.objects.filter(student__user=student_user).delete()
 
         advisor_user, _ = User.objects.get_or_create(email='test_advisor_api@auca.ac.rw', defaults={'role': 'Advisor'})
+        advisor_user.role = 'Advisor'
         advisor_user.set_password('advisorpass123')
         advisor_user.save()
 
