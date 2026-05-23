@@ -61,11 +61,11 @@ class Command(BaseCommand):
         # 5. Create Career Clusters
         cluster_se, _ = CareerCluster.objects.get_or_create(
             name="Software Engineering",
-            defaults={'description': 'Building and maintaining software systems.', 'required_skills': {"Python": "Intermediate", "System Design": "Basic"}}
+            defaults={'description': 'Building and maintaining software systems.', 'required_skills': {"skills": [{"name": "Python", "type": "Technical"}, {"name": "System Design", "type": "Technical"}]}}
         )
         cluster_ds, _ = CareerCluster.objects.get_or_create(
             name="Data Science",
-            defaults={'description': 'Analyzing complex data.', 'required_skills': {"Python": "Advanced", "SQL": "Intermediate"}}
+            defaults={'description': 'Analyzing complex data.', 'required_skills': {"skills": [{"name": "Python", "type": "Technical"}, {"name": "SQL", "type": "Technical"}]}}
         )
 
         # 6. Create Skills
