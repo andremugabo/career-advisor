@@ -92,3 +92,58 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         attrs['reset_token'] = reset_token
         return attrs
+
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import exceptions
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        if self.user and self.user.mfa_enabled:
+            from apps.authentication.models import MFAToken
+            from apps.authentication.services import send_mfa_email
+            
+            mfa_token = MFAToken.generate_token_for_user(self.user)
+            send_mfa_email(mfa_token)
+            
+            return {
+                "mfa_required": True,
+                "email": self.user.email
+            }
+            
+        return data
+
+
+class MFAVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    token = serializers.CharField(max_length=6, min_length=6)
+
+    def validate(self, attrs):
+        from django.contrib.auth import get_user_model
+        from apps.authentication.models import MFAToken
+        User = get_user_model()
+        
+        email = attrs.get('email')
+        token_code = attrs.get('token')
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid credentials or verification code.")
+            
+        try:
+            mfa_token = MFAToken.objects.get(user=user, token=token_code, is_used=False)
+        except MFAToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid or expired verification code.")
+            
+        if not mfa_token.is_valid():
+            mfa_token.is_used = True
+            mfa_token.save()
+            raise serializers.ValidationError("This verification code has expired.")
+            
+        attrs['mfa_token'] = mfa_token
+        attrs['user'] = user
+        return attrs
+
