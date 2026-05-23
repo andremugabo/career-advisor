@@ -93,3 +93,47 @@ class ResetPasswordView(APIView):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AcademicProgramsListView(APIView):
+    permission_classes = [permissions.AllowAny] # Publicly accessible for signup page
+
+    def get(self, request):
+        from apps.profiles.models import AcademicPrograms
+        programs = AcademicPrograms.objects.all().values('id', 'name', 'faculty')
+        return Response(list(programs), status=status.HTTP_200_OK)
+
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+class MFAVerifyView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from apps.authentication.serializers import MFAVerifySerializer
+        serializer = MFAVerifySerializer(data=request.data)
+        if serializer.is_valid():
+            mfa_token = serializer.validated_data['mfa_token']
+            user = serializer.validated_data['user']
+            
+            # Mark token as used
+            mfa_token.is_used = True
+            mfa_token.save()
+            
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    from apps.authentication.serializers import CustomTokenObtainPairSerializer
+    serializer_class = CustomTokenObtainPairSerializer
+
+
