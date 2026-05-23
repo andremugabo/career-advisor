@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Input } from '../../components';
-import { Brain, CheckCircle2, Star, ChevronDown, Mail, Phone, MapPin, Search, FileText, Briefcase } from 'lucide-react';
+import { Button } from '../../components';
+import { Brain, CheckCircle2, Star, ChevronDown, Mail, Phone, MapPin, Search } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -70,7 +70,7 @@ export const LandingPage: React.FC = () => {
             Unlock your potential with our comprehensive career counseling services. We use advanced AI to align your academic skills with real-world opportunities.
           </p>
           <div className="flex gap-4">
-            <Link to="/login">
+            <Link to="/register">
               <Button className="bg-[#19A7CE] hover:bg-[#146C94] text-white px-10 py-4 text-lg rounded-md shadow-xl shadow-[#19A7CE]/20">
                 Get Started
               </Button>
@@ -91,7 +91,7 @@ export const LandingPage: React.FC = () => {
             </p>
             <div className="flex gap-4">
               <Button className="bg-[#146C94] hover:bg-[#19A7CE] text-white px-8 rounded-md shadow-md">Learn More</Button>
-              <Link to="/login">
+              <Link to="/register">
                 <Button variant="secondary" className="border-none text-[#19A7CE] hover:bg-[#AFD3E2]/10 px-8 rounded-md">Sign Up</Button>
               </Link>
             </div>
@@ -272,7 +272,7 @@ export const LandingPage: React.FC = () => {
           </div>
           <div className="flex gap-4 shrink-0">
             <Button className="bg-[#146C94] hover:bg-slate-800 text-white px-8 rounded-md shadow-md border-none">Book</Button>
-            <Link to="/login">
+            <Link to="/register">
               <Button className="bg-white hover:bg-slate-100 text-[#146C94] px-8 rounded-md shadow-md border-none">Sign Up</Button>
             </Link>
           </div>
