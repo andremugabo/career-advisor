@@ -116,6 +116,8 @@ python manage.py seed_internships
 ### 4. Running the Dev Servers
 ```bash
 # Start backend on http://127.0.0.1:8000
+# Ensure you are inside the backend/ directory and activate the virtual environment first
+source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 python manage.py runserver
 
 # Start frontend (in a separate terminal inside frontend/ directory)
