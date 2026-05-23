@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.profiles.models import Student
+from apps.advisors.models import StudentIntervention
 from ai.recommenders.career_recommender import CareerRecommender
 
 class AdvisorStudentProfileSerializer(serializers.ModelSerializer):
@@ -17,3 +18,14 @@ class AdvisorStudentProfileSerializer(serializers.ModelSerializer):
     def get_top_recommendations(self, obj):
         # Dynamically retrieve top 3 career recommendations for this student
         return CareerRecommender.get_recommendations(obj, top_n=3)
+
+
+class StudentInterventionSerializer(serializers.ModelSerializer):
+    advisor_email = serializers.EmailField(source='advisor.user.email', read_only=True)
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+
+    class Meta:
+        model = StudentIntervention
+        fields = ['id', 'advisor', 'advisor_email', 'student', 'student_name', 'intervention_type', 'notes', 'created_at']
+        read_only_fields = ['advisor', 'created_at']
+
