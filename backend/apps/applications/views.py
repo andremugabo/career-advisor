@@ -13,12 +13,21 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'Admin':
-            return Application.objects.all().select_related('internship', 'internship__cluster', 'student', 'student__user').order_by('-applied_at')
-            
+            # Order by creation time (the model does not have an `applied_at` field).
+            return (
+                Application.objects.all()
+                .select_related('internship', 'internship__cluster', 'student', 'student__user')
+                .order_by('-created_at')
+            )
+
         # Enforce that students only see their own applications
         try:
             student = Student.objects.get(user=user)
-            return Application.objects.filter(student=student).select_related('internship', 'internship__cluster').order_by('-applied_at')
+            return (
+                Application.objects.filter(student=student)
+                .select_related('internship', 'internship__cluster')
+                .order_by('-created_at')
+            )
         except Student.DoesNotExist:
             return Application.objects.none()
 
