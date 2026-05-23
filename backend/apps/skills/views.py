@@ -21,6 +21,11 @@ class SkillViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(name__icontains=search_query)
         return queryset
 
+    def get_permissions(self):
+        if self.action in ['my_skills', 'add_my_skill', 'delete_my_skill']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
     @action(detail=False, methods=['get'], url_path='my')
     def my_skills(self, request):
         """
@@ -85,6 +90,11 @@ class CertificationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = CertificationSerializer
     queryset = Certification.objects.all().order_by('-created_at')
+
+    def get_permissions(self):
+        if self.action in ['my_certifications', 'enroll_my_certification', 'update_my_certification']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
 
     @action(detail=False, methods=['get'], url_path='my')
     def my_certifications(self, request):
