@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components';
 import { Brain, CheckCircle2, Star, ChevronDown, Mail, Phone, MapPin, Search } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [dashboardPath, setDashboardPath] = useState('/dashboard');
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    const role = localStorage.getItem('user_role');
+    if (token) {
+      setIsAuthenticated(true);
+      if (role === 'Admin') setDashboardPath('/admin/dashboard');
+      else if (role === 'Advisor') setDashboardPath('/students');
+      else setDashboardPath('/dashboard');
+    }
+  }, []);
 
   const faqs = [
     {
@@ -45,9 +58,15 @@ export const LandingPage: React.FC = () => {
           </nav>
           
           <div>
-            <Link to="/login">
-              <Button className="bg-[#146C94] hover:bg-[#19A7CE] text-white px-8 rounded-md shadow-md">Sign In</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={dashboardPath}>
+                <Button className="bg-[#146C94] hover:bg-[#19A7CE] text-white px-8 rounded-md shadow-md">Dashboard</Button>
+              </Link>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-[#146C94] hover:bg-[#19A7CE] text-white px-8 rounded-md shadow-md">Sign In</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -70,11 +89,19 @@ export const LandingPage: React.FC = () => {
             Unlock your potential with our comprehensive career counseling services. We use advanced AI to align your academic skills with real-world opportunities.
           </p>
           <div className="flex gap-4">
-            <Link to="/register">
-              <Button className="bg-[#19A7CE] hover:bg-[#146C94] text-white px-10 py-4 text-lg rounded-md shadow-xl shadow-[#19A7CE]/20">
-                Get Started
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={dashboardPath}>
+                <Button className="bg-[#19A7CE] hover:bg-[#146C94] text-white px-10 py-4 text-lg rounded-md shadow-xl shadow-[#19A7CE]/20">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/register">
+                <Button className="bg-[#19A7CE] hover:bg-[#146C94] text-white px-10 py-4 text-lg rounded-md shadow-xl shadow-[#19A7CE]/20">
+                  Get Started
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -91,9 +118,15 @@ export const LandingPage: React.FC = () => {
             </p>
             <div className="flex gap-4">
               <Button className="bg-[#146C94] hover:bg-[#19A7CE] text-white px-8 rounded-md shadow-md">Learn More</Button>
-              <Link to="/register">
-                <Button variant="secondary" className="border-none text-[#19A7CE] hover:bg-[#AFD3E2]/10 px-8 rounded-md">Sign Up</Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to={dashboardPath}>
+                  <Button variant="secondary" className="border-none text-[#19A7CE] hover:bg-[#AFD3E2]/10 px-8 rounded-md">View Dashboard</Button>
+                </Link>
+              ) : (
+                <Link to="/register">
+                  <Button variant="secondary" className="border-none text-[#19A7CE] hover:bg-[#AFD3E2]/10 px-8 rounded-md">Sign Up</Button>
+                </Link>
+              )}
             </div>
           </div>
           <div className="relative">
@@ -272,9 +305,15 @@ export const LandingPage: React.FC = () => {
           </div>
           <div className="flex gap-4 shrink-0">
             <Button className="bg-[#146C94] hover:bg-slate-800 text-white px-8 rounded-md shadow-md border-none">Book</Button>
-            <Link to="/register">
-              <Button className="bg-white hover:bg-slate-100 text-[#146C94] px-8 rounded-md shadow-md border-none">Sign Up</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={dashboardPath}>
+                <Button className="bg-white hover:bg-slate-100 text-[#146C94] px-8 rounded-md shadow-md border-none">Go to Dashboard</Button>
+              </Link>
+            ) : (
+              <Link to="/register">
+                <Button className="bg-white hover:bg-slate-100 text-[#146C94] px-8 rounded-md shadow-md border-none">Sign Up</Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>

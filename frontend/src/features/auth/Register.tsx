@@ -47,8 +47,8 @@ export const Register: React.FC = () => {
         program_id: programId,
       });
 
-      notify.success('Registration successful! Please log in.');
-      navigate('/login');
+      notify.success('Registration successful! Please enter the verification code sent to your email.');
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       notify.error(error.message || 'Registration failed. Please try again.');
     } finally {

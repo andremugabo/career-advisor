@@ -35,15 +35,16 @@ export const Login: React.FC = () => {
         localStorage.setItem('access_token', response.access);
         localStorage.setItem('refresh_token', response.refresh);
         
-        // Note: In production, you would fetch /users/me to get the actual role. 
-        // For immediate routing based on your cheat sheet credentials:
-        const role = email.includes('admin') ? 'Admin' : email.includes('advisor') ? 'Advisor' : 'Student';
+        // Fetch actual user role from backend
+        const user = await authService.getCurrentUser();
+        const role = user.role || 'Student'; // Default fallback
         localStorage.setItem('user_role', role);
         
         notify.success(`Welcome back, ${role}!`);
         
         // Route based on RBAC layouts
-        if (role === 'Admin') navigate('/admin/settings');
+        if (role === 'Admin') navigate('/admin/dashboard');
+        else if (role === 'Advisor') navigate('/advisor/home');
         else navigate('/dashboard');
       }
     } catch (error: any) {
@@ -87,12 +88,14 @@ export const Login: React.FC = () => {
         localStorage.setItem('access_token', response.access);
         localStorage.setItem('refresh_token', response.refresh);
         
-        const role = email.includes('admin') ? 'Admin' : email.includes('advisor') ? 'Advisor' : 'Student';
+        const user = await authService.getCurrentUser();
+        const role = user.role || 'Student';
         localStorage.setItem('user_role', role);
         
         notify.success(`Verification successful. Welcome back!`);
         
-        if (role === 'Admin') navigate('/admin/settings');
+        if (role === 'Admin') navigate('/admin/dashboard');
+        else if (role === 'Advisor') navigate('/advisor/home');
         else navigate('/dashboard');
       }
     } catch (error: any) {
