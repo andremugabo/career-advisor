@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut, Brain, Code } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut, Brain, Code, Sparkles, TrendingUp, Scale, Star, Library, ClipboardList, MessageSquare, Activity } from 'lucide-react';
 import { Role } from '../types';
 
 interface SidebarProps {
@@ -14,12 +14,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, isOpen = false, setIsOpe
   const navigate = useNavigate();
 
   const navLinks = [
-    { name: 'Dashboard', path: role === 'Admin' ? '/admin/dashboard' : '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Student', 'Advisor', 'Admin'] },
+    { name: 'Dashboard', path: role === 'Admin' ? '/admin/dashboard' : '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Student', 'Admin'] },
+    
+    // Student Links
     { name: 'My Profile', path: '/profile', icon: <Settings className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Skills & Certs', path: '/skills', icon: <BookOpen className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Assessment', path: '/assessment', icon: <Brain className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'AI Recommendations', path: '/recommendations', icon: <Sparkles className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Career Path', path: '/career-path', icon: <TrendingUp className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Compare Careers', path: '/compare', icon: <Scale className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Saved Careers', path: '/favorites', icon: <Star className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Internships', path: '/internships', icon: <Briefcase className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'My Applications', path: '/applications', icon: <ClipboardList className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Resource Library', path: '/resources', icon: <Library className="w-5 h-5" />, roles: ['Student'] },
+    
+    // Advisor Links
+    { name: 'Dashboard', path: '/advisor/home', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Advisor'] },
     { name: 'Students', path: '/students', icon: <Users className="w-5 h-5" />, roles: ['Advisor'] },
+    { name: 'Messages', path: '/messages', icon: <MessageSquare className="w-5 h-5" />, roles: ['Advisor'] },
+    { name: 'Interventions', path: '/interventions', icon: <ClipboardList className="w-5 h-5" />, roles: ['Advisor'] },
+    { name: 'Resource Library', path: '/advisor/resources', icon: <Library className="w-5 h-5" />, roles: ['Advisor'] },
+
+    // Admin Links
     { name: 'User Management', path: '/admin/users', icon: <Users className="w-5 h-5" />, roles: ['Admin'] },
+    { name: 'System Analytics', path: '/admin/analytics', icon: <Activity className="w-5 h-5" />, roles: ['Admin'] },
     { name: 'App & Jobs', path: '/admin/internships', icon: <Briefcase className="w-5 h-5" />, roles: ['Admin'] },
     { name: 'Global Content', path: '/admin/content', icon: <Code className="w-5 h-5" />, roles: ['Admin'] },
     { name: 'System Settings', path: '/admin/settings', icon: <Settings className="w-5 h-5" />, roles: ['Admin'] },

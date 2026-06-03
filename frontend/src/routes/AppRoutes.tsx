@@ -9,10 +9,15 @@ import {
   LandingPage,
   Login,
   Register,
+  VerifyEmail,
   ForgotPassword,
   ResetPassword,
   Dashboard,
+  AdvisorHome,
   AdvisorDashboard,
+  AdvisorNotifications,
+  InterventionsHistory,
+  AdvisorResourceLibrary,
   AdminDashboard,
   AdminUsers,
   AdminInternships,
@@ -21,6 +26,14 @@ import {
   StudentProfile,
   SkillsCerts,
   InternshipBoard,
+  RecommendationsPage,
+  CareerAssessment,
+  CareerVisualization,
+  CareerComparison,
+  FavoriteCareers,
+  ResourceLibrary,
+  ApplicationsTracker,
+  AdminAnalytics,
   NotFoundPage,
 } from '../features';
 
@@ -43,6 +56,7 @@ export default function AppRoutes() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
@@ -53,19 +67,32 @@ export default function AppRoutes() {
           <Route path="/profile" element={<StudentProfile />} />
           <Route path="/skills" element={<SkillsCerts />} />
           <Route path="/internships" element={<InternshipBoard />} />
+          <Route path="/recommendations" element={<RecommendationsPage />} />
+          <Route path="/assessment" element={<CareerAssessment />} />
+          <Route path="/career-path" element={<CareerVisualization />} />
+          <Route path="/compare" element={<CareerComparison />} />
+          <Route path="/favorites" element={<FavoriteCareers />} />
+          <Route path="/resources" element={<ResourceLibrary />} />
+          <Route path="/applications" element={<ApplicationsTracker />} />
         </Route>
 
         {/* Advisor Routes wrapped in RBAC AdvisorLayout */}
         <Route element={<AdvisorLayout />}>
-          <Route path="/students" element={<AdvisorDashboard />} /> 
+          <Route path="/advisor/home" element={<AdvisorHome />} />
+          <Route path="/students" element={<AdvisorDashboard />} />
+          <Route path="/messages" element={<AdvisorNotifications />} />
+          <Route path="/interventions" element={<InterventionsHistory />} />
+          <Route path="/advisor/resources" element={<AdvisorResourceLibrary />} />
         </Route>
 
         {/* Admin Routes wrapped in RBAC AdminLayout */}
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} /> 
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/admin/internships" element={<AdminInternships />} />
           <Route path="/admin/content" element={<AdminContent />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
         {/* 404 Catch-all */}

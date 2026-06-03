@@ -30,6 +30,7 @@ export const Topbar: React.FC<TopbarProps> = ({ role, onMenuClick }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
     navigate('/login');
   };

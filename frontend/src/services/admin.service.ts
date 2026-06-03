@@ -70,5 +70,73 @@ export const adminService = {
   // Applications Tracking
   getApplications: async (page = 1) => {
     return apiFetch<PaginatedResponse<any>>(`/applications/?page=${page}`);
-  }
+  },
+
+  // Analytics
+  getPermissionMatrix: async () => {
+    return apiFetch<Record<string, Record<string, string[]>>>('/analytics/permission-matrix/');
+  },
+
+  getEncryptionStatus: async () => {
+    return apiFetch<any>('/analytics/encryption-status/');
+  },
+
+  getSystemOverview: async () => {
+    return apiFetch<any>('/analytics/overview/');
+  },
+
+  // Audit Export
+  exportAuditLogsCsv: async () => {
+    const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000/api'}/audit/export-csv/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to export audit logs');
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'audit_logs.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  // Notifications
+  getNotifications: async (page = 1) => {
+    return apiFetch<PaginatedResponse<any>>(`/notifications/?page=${page}`);
+  },
+
+  sendNotification: async (data: { recipient: string; subject: string; message: string }) => {
+    return apiFetch<any>('/notifications/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  markNotificationRead: async (id: string) => {
+    return apiFetch<any>(`/notifications/${id}/mark-read/`, {
+      method: 'POST',
+    });
+  },
+
+  // Resources
+  getResources: async (page = 1) => {
+    return apiFetch<PaginatedResponse<any>>(`/resources/?page=${page}`);
+  },
+
+  createResource: async (data: any) => {
+    return apiFetch<any>('/resources/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteResource: async (id: string) => {
+    return apiFetch<any>(`/resources/${id}/`, {
+      method: 'DELETE',
+    });
+  },
 };

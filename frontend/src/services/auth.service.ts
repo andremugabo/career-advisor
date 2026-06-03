@@ -29,6 +29,13 @@ export const authService = {
     });
   },
 
+  verifyEmail: async (email: string, token: string) => {
+    return apiFetch<any>('/auth/verify-email/', {
+      method: 'POST',
+      body: JSON.stringify({ email, token }),
+    });
+  },
+
   forgotPassword: async (email: string) => {
     return apiFetch<any>('/auth/forgot-password/', {
       method: 'POST',
@@ -45,5 +52,9 @@ export const authService = {
 
   getPrograms: async () => {
     return apiFetch<any[]>('/auth/programs/');
+  },
+  
+  getCurrentUser: async () => {
+    return apiFetch<any>('/users/me/');
   }
 };
