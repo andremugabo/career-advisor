@@ -11,6 +11,9 @@ export const InternshipBoard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationFilter, setLocationFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [isApplying, setIsApplying] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInternships(currentPage);
@@ -32,9 +35,32 @@ export const InternshipBoard = () => {
   const filteredInternships = internships.filter((internship) => {
     const title = internship.title?.toLowerCase() ?? '';
     const company = internship.company?.toLowerCase() ?? '';
+    const location = internship.location?.toLowerCase() ?? '';
+    const type = internship.type?.toLowerCase() ?? '';
     const term = searchTerm.toLowerCase();
-    return title.includes(term) || company.includes(term);
+    
+    const matchesSearch = title.includes(term) || company.includes(term);
+    const matchesLocation = locationFilter === 'All' || location === locationFilter.toLowerCase();
+    const matchesType = typeFilter === 'All' || type === typeFilter.toLowerCase();
+    
+    return matchesSearch && matchesLocation && matchesType;
   });
+
+  const handleApply = async (internshipId: string, company: string) => {
+    setIsApplying(internshipId);
+    try {
+      await studentService.applyForInternship(internshipId);
+      notify.success(`Successfully applied to ${company}!`);
+    } catch (error: any) {
+      notify.error(error.message || `Failed to apply to ${company}.`);
+    } finally {
+      setIsApplying(null);
+    }
+  };
+
+  // Extract unique locations and types for filters
+  const distinctLocations = Array.from(new Set(internships.map(i => i.location))).filter(Boolean);
+  const distinctTypes = Array.from(new Set(internships.map(i => i.type))).filter(Boolean);
 
   return (
     <div className="space-y-8 animate-fade-in pb-12 max-w-7xl mx-auto">
@@ -46,15 +72,35 @@ export const InternshipBoard = () => {
           </p>
         </div>
         
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search roles or companies..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 w-full glass-input bg-white focus:outline-none"
-          />
+        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+          <select 
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className="glass-input bg-white focus:outline-none text-sm py-2 px-3"
+          >
+            <option value="All">All Locations</option>
+            {distinctLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+          </select>
+          
+          <select 
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="glass-input bg-white focus:outline-none text-sm py-2 px-3"
+          >
+            <option value="All">All Durations/Types</option>
+            {distinctTypes.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search roles or companies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full glass-input bg-white focus:outline-none py-2"
+            />
+          </div>
         </div>
       </div>
 
@@ -112,13 +158,22 @@ export const InternshipBoard = () => {
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${job.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                   {job.is_active ? 'Active' : 'Closed'}
                 </span>
-                <Button 
-                  disabled={!job.is_active}
-                  onClick={() => notify.success(`Application form for ${job.company} opened!`)}
-                  className="bg-white text-[#146C94] border border-slate-200 hover:border-[#19A7CE] hover:text-[#19A7CE] shadow-sm py-1.5 px-3 text-xs h-auto flex items-center gap-1"
-                >
-                  View Details <ArrowUpRight size={14} />
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="secondary"
+                    className="py-1.5 px-3 text-xs h-auto"
+                  >
+                    View
+                  </Button>
+                  <Button 
+                    disabled={!job.is_active || isApplying === job.id}
+                    isLoading={isApplying === job.id}
+                    onClick={() => handleApply(job.id, job.company)}
+                    className="bg-[#146C94] hover:bg-[#19A7CE] text-white shadow-sm py-1.5 px-4 text-xs h-auto flex items-center gap-1"
+                  >
+                    Apply Now <ArrowUpRight size={14} />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}

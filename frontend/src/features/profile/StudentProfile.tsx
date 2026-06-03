@@ -9,6 +9,7 @@ export const StudentProfile = () => {
   const [profile, setProfile] = useState<StudentProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Form State
   const [bio, setBio] = useState('');
@@ -51,6 +52,27 @@ export const StudentProfile = () => {
       notify.error(error.message || 'Failed to update profile.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      notify.error('Please upload a valid PDF document.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await studentService.uploadTranscript(file);
+      notify.success('Transcript uploaded and parsed successfully!');
+      fetchProfile(); // Refresh to show new skills
+    } catch (error: any) {
+      notify.error(error.message || 'Failed to upload transcript.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -162,6 +184,35 @@ export const StudentProfile = () => {
               </Button>
             </div>
           </form>
+        </Card>
+
+        {/* Transcript Upload */}
+        <Card className="border-slate-200 shadow-sm mt-8">
+          <h3 className="text-lg font-bold text-[#146C94] font-outfit mb-6 border-b border-slate-100 pb-4">
+            Academic Transcript
+          </h3>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Upload your latest academic transcript (PDF). Emmerence AI will automatically parse it to identify courses completed, update your GPA, and map verified skills to your profile.
+            </p>
+            <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors">
+              <input
+                type="file"
+                accept=".pdf"
+                id="transcript-upload"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              <label htmlFor="transcript-upload" className="cursor-pointer flex flex-col items-center">
+                <FileText className={`w-12 h-12 mb-3 ${isUploading ? 'text-[#19A7CE] animate-bounce' : 'text-slate-400'}`} />
+                <span className="text-sm font-bold text-[#146C94]">
+                  {isUploading ? 'Parsing transcript...' : 'Click to select PDF document'}
+                </span>
+                <span className="text-xs text-slate-500 mt-1">Maximum file size: 5MB</span>
+              </label>
+            </div>
+          </div>
         </Card>
       </div>
     </div>
