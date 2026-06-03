@@ -110,9 +110,14 @@ git clone https://github.com/andremugabo/career-advisor.git
 cd career-advisor/backend
 ```
 
+> [!IMPORTANT]
+> **Virtual Environment Requirement**:
+> On macOS/Linux, running generic `python` command directly in the shell will result in `zsh: command not found: python`.
+> You **MUST** either activate the virtual environment first, or use `python3` / `venv/bin/python` to invoke Django tasks.
+
 Activate the dedicated Python virtual environment:
 ```bash
-source venv/bin/activate
+source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 ```
 
 Create a `.env` file inside the `backend/` directory:
@@ -123,25 +128,30 @@ DATABASE_URL="postgres://postgres:123@localhost:5432/career-advisor_db"
 ```
 
 ### 2. Schema Migrations & Seeding Mappings
-Run the migrations and execute the three seeders to populate career clusters, certifications, and mock internships:
+First, execute schema migrations to initialize all tables, then run the seeders to populate the database:
+
 ```bash
-# Push database schemas to PostgreSQL
+# 1. Push database schemas to PostgreSQL
 python manage.py migrate
 
-# Seed 904 O*NET Career Clusters
+# 2. Seed 904 O*NET Career Clusters and core Skills dictionary
 python manage.py seed_onet
 
-# Seed professional certifications (AWS, Coursera)
+# 3. Seed professional certifications mapped to technical skills
 python manage.py seed_certs
 
-# Seed internship vacancies (Google, Stripe, Meta)
+# 4. Seed mock internship vacancies matching career clusters
 python manage.py seed_internships
+
+# 5. Create or reset the master admin user
+python create_admin.py
 ```
+*(If you are running without activating the virtual environment, replace `python` with `python3` in all commands above).*
 
 ### 3. System Passwords Cheat Sheet
 
 **System Account Passwords** (Used for application login or `/admin/` portal):
-* **Super Admin / Root User** (`admin@auca.ac.rw`): `adminpass123`
+* **Super Admin / Root User** (`admin@auca.ac.rw`): `123`
 * **Test Advisor Account** (`test_advisor_api@auca.ac.rw`): `advisorpass123`
 * **Test Student Account** (`test_student_api@auca.ac.rw`): `studentpass123`
 
@@ -153,10 +163,11 @@ python manage.py seed_internships
 ```bash
 # Start backend on http://127.0.0.1:8000
 # Ensure you are inside the backend/ directory and activate the virtual environment first
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-python manage.py runserver
+source venv/bin/activate
+python manage.py runserver  # Or: python3 manage.py runserver
 
 # Start frontend (in a separate terminal inside frontend/ directory)
+cd ../frontend
 npm run dev
 ```
 
@@ -176,11 +187,11 @@ The project features a highly robust automated testing suite to verify all busin
 ### 1. Live REST API Integration test
 This command spins up the Django client, mock-logs in student/advisor sessions, updates academic profiles, asserts audit logging, adds/deletes skills, enrolls in certifications, and verifies advisor access restrictions:
 ```bash
-python manage.py test_all_features
+python manage.py test_all_features  # Or: python3 manage.py test_all_features
 ```
 
 ### 2. Handshake Connectivity Check
 Run this script to verify that the live servers are up, healthy, and correctly passing auth headers:
 ```bash
-python dataset/test_server_connectivity.py
+python dataset/test_server_connectivity.py  # Or: python3 dataset/test_server_connectivity.py
 ```
