@@ -17,6 +17,7 @@ class Student(AbstractAuditEntity):
     program = models.ForeignKey(AcademicPrograms, on_delete=models.SET_NULL, null=True, related_name='students')
     current_year = models.IntegerField()
     bio = models.TextField(blank=True, null=True)
+    transcript_text = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.full_name

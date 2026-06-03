@@ -63,3 +63,83 @@ class ProfileViewSet(viewsets.ViewSet):
                 )
 
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='upload-transcript')
+    def upload_transcript(self, request):
+        """
+        POST /api/profiles/upload-transcript/
+        Expects a multipart/form-data upload with 'file' key containing a PDF transcript.
+        """
+        user = request.user
+        try:
+            student = Student.objects.get(user=user)
+        except Student.DoesNotExist:
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        transcript_file = request.FILES.get('file')
+        if not transcript_file:
+            return Response({"error": "No file uploaded. Please provide a PDF file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not transcript_file.name.endswith('.pdf'):
+            return Response({"error": "Only PDF files are supported."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            import PyPDF2
+            reader = PyPDF2.PdfReader(transcript_file)
+            extracted_text = ""
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    extracted_text += text + "\n"
+            
+            student.transcript_text = extracted_text
+            student.save()
+            
+            ip_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
+            AuditLog.objects.create(
+                user=user,
+                action="transcript_uploaded",
+                details={"filename": transcript_file.name, "size": transcript_file.size},
+                created_by=user.email,
+                created_from_ip=ip_addr,
+                modified_from_ip=ip_addr
+            )
+
+            return Response({
+                "message": "Transcript uploaded and parsed successfully.",
+                "parsed_length": len(extracted_text)
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": f"Failed to parse PDF: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], url_path='share-report')
+    def share_report(self, request):
+        """
+        POST /api/profiles/share-report/
+        Shares the student's career report with an advisor.
+        """
+        user = request.user
+        advisor_id = request.data.get('advisor_id')
+        
+        if not advisor_id:
+            return Response({"error": "advisor_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            student = Student.objects.get(user=user)
+        except Student.DoesNotExist:
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+        # In a full implementation, this would create a permission link or a message
+        # For now, we simulate sharing by logging it as an audit event.
+        ip_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        AuditLog.objects.create(
+            user=user,
+            action="report_shared_with_advisor",
+            details={"advisor_id": advisor_id},
+            created_by=user.email,
+            created_from_ip=ip_addr,
+            modified_from_ip=ip_addr
+        )
+        
+        return Response({"message": "Report successfully shared with the advisor."}, status=status.HTTP_200_OK)

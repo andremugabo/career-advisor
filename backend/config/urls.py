@@ -41,8 +41,14 @@ urlpatterns = [
     # AI Recommendation Engine Endpoints
     path("api/", include("apps.recommendations.urls")),
 
+    # Careers Endpoints
+    path("api/careers/", include("apps.careers.urls")),
+
     # Profiles Endpoints
     path("api/", include("apps.profiles.urls")),
+
+    # Resources Endpoints
+    path("api/", include("apps.resources.urls")),
 
     # Skills Endpoints
     path("api/", include("apps.skills.urls")),
@@ -56,11 +62,15 @@ urlpatterns = [
     # Advisors Endpoints
     path("api/", include("apps.advisors.urls")),
 
+    # Notifications Endpoints
+    path("api/", include("apps.notifications.urls")),
+
     # Authentication Endpoints
     path("api/", include("apps.authentication.urls")),
 
     # Admin Management Endpoints
     path("api/", include("apps.users.urls")),
     path("api/", include("apps.audit.urls")),
+    path("api/", include("apps.analytics.urls")),
 ]
 
