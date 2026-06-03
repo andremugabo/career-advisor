@@ -359,7 +359,7 @@ export default function AdminUsers() {
                   <p className="text-xs text-slate-400 mt-0.5">User can log in and access the system</p>
                 </div>
                 <Toggle
-                  checked={editForm.is_active ?? editingUser.is_active}
+                  checked={editForm.is_active ?? editingUser.is_active ?? false}
                   onChange={v => setEditForm({ ...editForm, is_active: v })}
                 />
               </div>
@@ -369,7 +369,7 @@ export default function AdminUsers() {
                   <p className="text-xs text-slate-400 mt-0.5">Multi-factor authentication for this account</p>
                 </div>
                 <Toggle
-                  checked={editForm.mfa_enabled ?? editingUser.mfa_enabled}
+                  checked={editForm.mfa_enabled ?? editingUser.mfa_enabled ?? false}
                   onChange={v => setEditForm({ ...editForm, mfa_enabled: v })}
                 />
               </div>

@@ -6,7 +6,9 @@ import { ShieldAlert, Users, Activity, FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [logs, setLogs] = useState<any[]>([]);
+  const [overview, setOverview] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -17,16 +19,31 @@ export default function AdminDashboard() {
   const fetchAuditLogs = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await adminService.getAuditLogs(page);
-      // Assuming paginated response has a 'results' array
+      const [response, overviewData] = await Promise.all([
+        adminService.getAuditLogs(page),
+        adminService.getSystemOverview()
+      ]);
       setLogs(response.results || []);
       setTotalItems(response.count || 0);
+      setOverview(overviewData);
     } catch (error: any) {
       // Graceful degradation if the endpoint isn't fully ready
       notify.error(error.message || 'Failed to fetch system audit logs.');
       setLogs([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExportLogs = async () => {
+    setIsExporting(true);
+    try {
+      await adminService.exportAuditLogsCsv();
+      notify.success('Audit logs exported successfully!');
+    } catch (error: any) {
+      notify.error(error.message || 'Failed to export logs.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -41,7 +58,9 @@ export default function AdminDashboard() {
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Total Users</p>
-            <h3 className="text-2xl font-bold font-outfit text-[#146C94]">1,248</h3>
+            <h3 className="text-2xl font-bold font-outfit text-[#146C94]">
+              {overview?.total_users || '...'}
+            </h3>
           </div>
         </Card>
 
@@ -61,7 +80,9 @@ export default function AdminDashboard() {
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Security Flags</p>
-            <h3 className="text-2xl font-bold font-outfit text-rose-600">0</h3>
+            <h3 className="text-2xl font-bold font-outfit text-rose-600">
+              {overview?.total_failed_logins || 0}
+            </h3>
           </div>
         </Card>
       </div>
@@ -73,9 +94,14 @@ export default function AdminDashboard() {
             <FileText className="w-5 h-5 text-[#19A7CE]" />
             Recent Audit Logs
           </h3>
-          <Button variant="secondary" onClick={() => fetchAuditLogs(currentPage)} isLoading={isLoading}>
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={handleExportLogs} isLoading={isExporting}>
+              Export CSV
+            </Button>
+            <Button variant="secondary" onClick={() => fetchAuditLogs(currentPage)} isLoading={isLoading}>
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

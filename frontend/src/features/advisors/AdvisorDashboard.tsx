@@ -587,9 +587,18 @@ export default function AdvisorDashboard() {
 
                         <div className="flex justify-end mt-6 pt-4 border-t border-slate-100">
                           <Button
-                            onClick={() => {
-                              notify.success(`Advising report generated for ${selectedStudent.full_name}`);
-                              setSelectedStudent(null);
+                            onClick={async () => {
+                              try {
+                                await advisorService.logIntervention({
+                                  student: selectedStudent.id,
+                                  intervention_type: 'Career Track Updated',
+                                  notes: `Approved AI Advising Report for ${selectedCareer.title} (${selectedCareer.match_percentage}% match).`
+                                });
+                                notify.success(`Advising report approved and logged for ${selectedStudent.full_name}`);
+                                setSelectedStudent(null);
+                              } catch (err: any) {
+                                notify.error('Failed to approve report.');
+                              }
                             }}
                             className="bg-[#146C94] hover:bg-[#19A7CE] text-white flex items-center gap-1 text-sm py-2"
                           >
