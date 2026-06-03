@@ -50,9 +50,16 @@ class UserRegistrationSerializer(serializers.Serializer):
                 bio=""
             )
             
-            # Trigger welcome email upon successful transaction commit
-            from apps.authentication.services import send_welcome_email
-            transaction.on_commit(lambda: send_welcome_email(student))
+            # Trigger welcome email and verification email
+            from apps.authentication.services import send_welcome_email, send_email_verification_email
+            from apps.authentication.models import EmailVerificationToken
+            
+            def on_commit_callback():
+                send_welcome_email(student)
+                token = EmailVerificationToken.generate_token_for_user(user)
+                send_email_verification_email(token)
+                
+            transaction.on_commit(on_commit_callback)
             
         return user
 
@@ -99,19 +106,40 @@ from rest_framework import exceptions
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        email = attrs.get('email') or attrs.get(User.USERNAME_FIELD)
         
-        if self.user and self.user.mfa_enabled:
-            from apps.authentication.models import MFAToken
-            from apps.authentication.services import send_mfa_email
+        try:
+            data = super().validate(attrs)
+        except exceptions.AuthenticationFailed as e:
+            # Increment failed attempts if user exists
+            try:
+                user = User.objects.get(email=email)
+                user.failed_login_attempts += 1
+                if user.failed_login_attempts >= 5:
+                    user.is_active = False  # Lock account
+                user.save()
+            except User.DoesNotExist:
+                pass
+            raise e
             
-            mfa_token = MFAToken.generate_token_for_user(self.user)
-            send_mfa_email(mfa_token)
+        # Reset failed attempts on successful login
+        if self.user:
+            self.user.failed_login_attempts = 0
+            self.user.save()
             
-            return {
-                "mfa_required": True,
-                "email": self.user.email
-            }
+            if self.user.mfa_enabled:
+                from apps.authentication.models import MFAToken
+                from apps.authentication.services import send_mfa_email
+                
+                mfa_token = MFAToken.generate_token_for_user(self.user)
+                send_mfa_email(mfa_token)
+                
+                return {
+                    "mfa_required": True,
+                    "email": self.user.email
+                }
             
         return data
 
@@ -144,6 +172,37 @@ class MFAVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError("This verification code has expired.")
             
         attrs['mfa_token'] = mfa_token
+        attrs['user'] = user
+        return attrs
+
+class VerifyEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    token = serializers.CharField(max_length=6, min_length=6)
+
+    def validate(self, attrs):
+        from django.contrib.auth import get_user_model
+        from apps.authentication.models import EmailVerificationToken
+        User = get_user_model()
+        
+        email = attrs.get('email')
+        token_code = attrs.get('token')
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid credentials or verification code.")
+            
+        try:
+            verification_token = EmailVerificationToken.objects.get(user=user, token=token_code, is_used=False)
+        except EmailVerificationToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid or expired verification code.")
+            
+        if not verification_token.is_valid():
+            verification_token.is_used = True
+            verification_token.save()
+            raise serializers.ValidationError("This verification code has expired.")
+            
+        attrs['verification_token'] = verification_token
         attrs['user'] = user
         return attrs
 

@@ -30,6 +30,32 @@ def send_welcome_email(student):
     except Exception as e:
         logger.error(f"Error sending welcome email to {student.user.email}: {e}")
 
+def send_email_verification_email(verification_token):
+    """
+    Sends an email with a 6-digit OTP to verify user email.
+    """
+    try:
+        user = verification_token.user
+        subject = f"Verify your Email Address: {verification_token.token} ✉️"
+        context = {
+            'otp_code': verification_token.token,
+        }
+        # Fallback to simple text if template doesn't exist
+        html_content = f"<h1>Email Verification</h1><p>Your verification code is: <strong>{verification_token.token}</strong></p>"
+        text_content = strip_tags(html_content)
+        
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email]
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+        logger.info(f"Verification OTP successfully sent to {user.email}")
+    except Exception as e:
+        logger.error(f"Error sending verification email to {user.email}: {e}")
+
 def send_password_reset_email(reset_token):
     """
     Sends a secure 6-digit OTP code to a user requesting a password reset.

@@ -136,4 +136,26 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     from apps.authentication.serializers import CustomTokenObtainPairSerializer
     serializer_class = CustomTokenObtainPairSerializer
 
+class VerifyEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from apps.authentication.serializers import VerifyEmailSerializer
+        serializer = VerifyEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            verification_token = serializer.validated_data['verification_token']
+            user = serializer.validated_data['user']
+            
+            # Mark token as used and user as verified
+            verification_token.is_used = True
+            verification_token.save()
+            
+            user.is_verified = True
+            user.save()
+            
+            return Response({
+                "message": "Email verified successfully."
+            }, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -28,6 +28,8 @@ class User(AbstractBaseUser, PermissionsMixin, AbstractAuditEntity):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Student')
     mfa_enabled = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    failed_login_attempts = models.IntegerField(default=0)
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
