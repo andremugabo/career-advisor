@@ -134,3 +134,72 @@ class RecommendationViewSet(viewsets.ViewSet):
 
         serializer = MatchResultSerializer(history_records, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='export-pdf')
+    def export_pdf(self, request):
+        """
+        GET /api/recommendations/export-pdf/
+        Generates and returns a PDF report of the student's career recommendations.
+        """
+        user = request.user
+        if hasattr(user, 'student_profile'):
+            student = user.student_profile
+        else:
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        recommendations = CareerRecommender.get_recommendations(student, top_n=5)
+        
+        from django.http import HttpResponse
+        import io
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.pdfgen import canvas
+            from reportlab.lib import colors
+        except ImportError:
+            return Response({"error": "reportlab is not installed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(100, height - 80, f"Career Recommendations Report")
+        p.setFont("Helvetica", 12)
+        p.drawString(100, height - 100, f"Student: {student.full_name}")
+        p.drawString(100, height - 120, f"Registration Number: {student.reg_number}")
+
+        y_pos = height - 160
+        for idx, rec in enumerate(recommendations):
+            p.setFont("Helvetica-Bold", 14)
+            p.drawString(100, y_pos, f"{idx + 1}. {rec.get('career_name', 'Unknown')}")
+            y_pos -= 20
+            p.setFont("Helvetica", 12)
+            p.drawString(120, y_pos, f"Match: {rec.get('match_percentage', 0)}%")
+            y_pos -= 20
+            missing_skills = ", ".join(rec.get('missing_skills', []))
+            p.drawString(120, y_pos, f"Missing Skills: {missing_skills if missing_skills else 'None'}")
+            y_pos -= 40
+            
+            if y_pos < 100:
+                p.showPage()
+                y_pos = height - 80
+
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        
+        # Log export
+        ip_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        from apps.audit.models import AuditLog
+        AuditLog.objects.create(
+            user=user,
+            action="exported_recommendation_report",
+            details={},
+            created_by=user.email,
+            created_from_ip=ip_addr,
+            modified_from_ip=ip_addr
+        )
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="career_report_{student.reg_number}.pdf"'
+        return response
