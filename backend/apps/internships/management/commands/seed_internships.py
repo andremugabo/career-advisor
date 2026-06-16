@@ -39,36 +39,36 @@ class Command(BaseCommand):
 
         internships_data = [
             {
-                "company_name": "Google",
-                "role_name": "Software Engineering Intern",
+                "company": "Google",
+                "title": "Software Engineering Intern",
                 "requirements": "Proficiency in Python, Git, and Cosine similarity algorithms.",
                 "deadline": datetime.date.today() + datetime.timedelta(days=90),
                 "cluster": software_cluster
             },
             {
-                "company_name": "Stripe",
-                "role_name": "Backend Engineer Intern",
+                "company": "Stripe",
+                "title": "Backend Engineer Intern",
                 "requirements": "Strong Python knowledge, REST APIs, PostgreSQL, and Django.",
                 "deadline": datetime.date.today() + datetime.timedelta(days=60),
                 "cluster": software_cluster
             },
             {
-                "company_name": "Meta",
-                "role_name": "AI & Data Science Intern",
+                "company": "Meta",
+                "title": "AI & Data Science Intern",
                 "requirements": "Strong mathematical optimization, machine learning models, and Python vectorization.",
                 "deadline": datetime.date.today() + datetime.timedelta(days=45),
                 "cluster": data_cluster
             },
             {
-                "company_name": "Salesforce",
-                "role_name": "Product Marketing Intern",
+                "company": "Salesforce",
+                "title": "Product Marketing Intern",
                 "requirements": "Excellent presentation, communication, and market intelligence analysis skills.",
                 "deadline": datetime.date.today() + datetime.timedelta(days=30),
                 "cluster": marketing_cluster
             },
             {
-                "company_name": "Pfizer",
-                "role_name": "Clinical Chemistry Intern",
+                "company": "Pfizer",
+                "title": "Clinical Chemistry Intern",
                 "requirements": "Laboratory operations, organic chemistry formulas, and data compliance standards.",
                 "deadline": datetime.date.today() + datetime.timedelta(days=120),
                 "cluster": chemistry_cluster
@@ -78,8 +78,8 @@ class Command(BaseCommand):
         created_count = 0
         for data in internships_data:
             internship, created = Internship.objects.get_or_create(
-                company_name=data["company_name"],
-                role_name=data["role_name"],
+                company=data["company"],
+                title=data["title"],
                 defaults={
                     "requirements": data["requirements"],
                     "deadline": data["deadline"],
