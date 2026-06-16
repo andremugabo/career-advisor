@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Card, Pagination, Button } from '../../components';
 import { studentService } from '../../services';
 import { notify } from '../../lib/toast';
@@ -164,9 +164,8 @@ export const ApplicationsTracker = () => {
                 filteredApps.map((app) => {
                   const isExpanded = expandedId === app.id;
                   return (
-                    <>
+                    <Fragment key={app.id}>
                       <tr
-                        key={app.id}
                         className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${isExpanded ? 'bg-[#19A7CE]/5' : ''}`}
                         onClick={() => setExpandedId(isExpanded ? null : app.id)}
                       >
@@ -313,7 +312,7 @@ export const ApplicationsTracker = () => {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })
               )}

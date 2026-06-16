@@ -40,3 +40,4 @@ export { ApplicationsTracker } from './applications/ApplicationsTracker';
 // 6. Miscellaneous
 export { NotFoundPage } from './misc/NotFoundPage';
 export { StudentMessages } from './misc/StudentMessages';
+export { StudentInterventions } from './misc/StudentInterventions';

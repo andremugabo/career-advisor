@@ -121,6 +121,16 @@ export const studentService = {
     });
   },
 
+  // Get advisor interventions for the current student
+  getMyInterventions: async () => {
+    return apiFetch<any[]>('/profiles/my-interventions/');
+  },
+
+  // Get list of advisors (for sharing)
+  getAdvisors: async () => {
+    return apiFetch<{ id: string; email: string }[]>('/profiles/list-advisors/');
+  },
+
   // Notifications (Student side)
   getNotifications: async (page = 1) => {
     return apiFetch<PaginatedResponse<any>>(`/notifications/?page=${page}`);

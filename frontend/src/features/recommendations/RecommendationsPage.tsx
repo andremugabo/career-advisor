@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, Button } from '../../components';
 import { studentService } from '../../services';
 import { notify } from '../../lib/toast';
-import { Brain, FileDown, Share2, Sparkles, Star, TrendingUp, AlertCircle } from 'lucide-react';
+import { Brain, FileDown, Share2, Sparkles, Star, TrendingUp, AlertCircle, ChevronDown } from 'lucide-react';
 import { Recommendation } from '../../types';
 
 export const RecommendationsPage = () => {
@@ -10,9 +10,13 @@ export const RecommendationsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [advisors, setAdvisors] = useState<{ id: string; email: string }[]>([]);
+  const [selectedAdvisorId, setSelectedAdvisorId] = useState<string>('');
+  const [showShareDropdown, setShowShareDropdown] = useState(false);
 
   useEffect(() => {
     fetchRecommendations();
+    fetchAdvisors();
   }, []);
 
   const fetchRecommendations = async () => {
@@ -24,6 +28,16 @@ export const RecommendationsPage = () => {
       notify.error(error.message || 'Failed to load recommendations.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAdvisors = async () => {
+    try {
+      const data = await studentService.getAdvisors();
+      setAdvisors(data || []);
+      if (data && data.length > 0) setSelectedAdvisorId(data[0].id);
+    } catch {
+      // silently fail
     }
   };
 
@@ -40,12 +54,15 @@ export const RecommendationsPage = () => {
   };
 
   const handleShare = async () => {
+    if (!selectedAdvisorId) {
+      notify.error('Please select an advisor to share with.');
+      return;
+    }
     setIsSharing(true);
     try {
-      // In a real app, you might have a dropdown to select an advisor.
-      // For now, we simulate sharing with a default advisor.
-      await studentService.shareReport('1'); 
-      notify.success('Report shared with your advisor!');
+      const result = await studentService.shareReport(selectedAdvisorId);
+      notify.success(result.message || 'Report shared with your advisor!');
+      setShowShareDropdown(false);
     } catch (error: any) {
       notify.error(error.message || 'Failed to share report.');
     } finally {
@@ -73,15 +90,40 @@ export const RecommendationsPage = () => {
           </p>
         </div>
         
-        <div className="flex gap-3">
-          <Button 
-            variant="secondary"
-            onClick={handleShare}
-            isLoading={isSharing}
-            leftIcon={<Share2 size={16} />}
-          >
-            Share with Advisor
-          </Button>
+        <div className="flex gap-3 items-end">
+          {/* Share with Advisor Dropdown */}
+          <div className="relative">
+            <Button 
+              variant="secondary"
+              onClick={() => setShowShareDropdown(!showShareDropdown)}
+              isLoading={isSharing}
+              leftIcon={<Share2 size={16} />}
+            >
+              Share with Advisor <ChevronDown size={14} className={`ml-1 transition-transform ${showShareDropdown ? 'rotate-180' : ''}`} />
+            </Button>
+            {showShareDropdown && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4 z-50 animate-fade-in">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Select Advisor</p>
+                <select
+                  value={selectedAdvisorId}
+                  onChange={(e) => setSelectedAdvisorId(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 mb-3 focus:outline-none focus:border-[#19A7CE]"
+                >
+                  {advisors.map((a) => (
+                    <option key={a.id} value={a.id}>{a.email}</option>
+                  ))}
+                </select>
+                <Button
+                  onClick={handleShare}
+                  isLoading={isSharing}
+                  className="w-full bg-[#146C94] hover:bg-[#19A7CE] text-sm"
+                  leftIcon={<Share2 size={14} />}
+                >
+                  Share Report
+                </Button>
+              </div>
+            )}
+          </div>
           <Button 
             onClick={handleExport}
             isLoading={isExporting}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut, Brain, Code, Sparkles, TrendingUp, Scale, Star, Library, ClipboardList, MessageSquare, Activity } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut, Brain, Code, Sparkles, TrendingUp, Scale, Star, Library, ClipboardList, ClipboardCheck, MessageSquare, Activity } from 'lucide-react';
 import { Role } from '../types';
 
 interface SidebarProps {
@@ -28,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, isOpen = false, setIsOpe
     { name: 'My Applications', path: '/applications', icon: <ClipboardList className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Resource Library', path: '/resources', icon: <Library className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Advisor Messages', path: '/messages', icon: <MessageSquare className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Advisor Notes', path: '/advisor-notes', icon: <ClipboardCheck className="w-5 h-5" />, roles: ['Student'] },
     
     // Advisor Links
     { name: 'Dashboard', path: '/advisor/home', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Advisor'] },

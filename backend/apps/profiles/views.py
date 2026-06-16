@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from apps.profiles.models import Student, WorkExperience
 from apps.profiles.serializers import StudentProfileSerializer, WorkExperienceSerializer
 from apps.audit.models import AuditLog
+from apps.advisors.models import StudentIntervention
 
 
 class ProfileViewSet(viewsets.ViewSet):
@@ -126,6 +127,7 @@ class ProfileViewSet(viewsets.ViewSet):
         """
         POST /api/profiles/share-report/
         Shares the student's career report with an advisor.
+        Creates a notification message for the advisor.
         """
         user = request.user
         advisor_id = request.data.get('advisor_id')
@@ -137,20 +139,73 @@ class ProfileViewSet(viewsets.ViewSet):
             student = Student.objects.get(user=user)
         except Student.DoesNotExist:
             return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
-            
-        # In a full implementation, this would create a permission link or a message
-        # For now, we simulate sharing by logging it as an audit event.
+
+        # Try to find the advisor user
+        from apps.users.models import User
+        try:
+            advisor_user = User.objects.get(id=advisor_id, role='Advisor')
+        except User.DoesNotExist:
+            return Response({"error": "Advisor not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create a notification for the advisor
+        from apps.notifications.models import AdvisorMessage
+        AdvisorMessage.objects.create(
+            sender=user,
+            recipient=advisor_user,
+            subject=f"Career Report Shared by {user.email}",
+            body=f"Student {user.email} has shared their AI career recommendations report with you for review. Please check their profile in the advisor dashboard.",
+        )
+
+        # Audit log
         ip_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
         AuditLog.objects.create(
             user=user,
             action="report_shared_with_advisor",
-            details={"advisor_id": advisor_id},
+            details={"advisor_id": str(advisor_id), "advisor_email": advisor_user.email},
             created_by=user.email,
             created_from_ip=ip_addr,
             modified_from_ip=ip_addr
         )
         
-        return Response({"message": "Report successfully shared with the advisor."}, status=status.HTTP_200_OK)
+        return Response({"message": f"Report successfully shared with {advisor_user.email}."}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='my-interventions')
+    def my_interventions(self, request):
+        """
+        GET /api/profiles/my-interventions/
+        Returns all advisor interventions for the currently logged-in student.
+        """
+        try:
+            student = Student.objects.get(user=request.user)
+        except Student.DoesNotExist:
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        interventions = StudentIntervention.objects.filter(
+            student=student
+        ).select_related('advisor__user').order_by('-created_at')
+        
+        data = [
+            {
+                "id": str(i.id),
+                "intervention_type": i.intervention_type,
+                "notes": i.notes,
+                "advisor_email": i.advisor.user.email if i.advisor and i.advisor.user else "Advisor",
+                "created_at": i.created_at.isoformat(),
+            }
+            for i in interventions
+        ]
+        
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='list-advisors')
+    def list_advisors(self, request):
+        """
+        GET /api/profiles/list-advisors/
+        Returns a simple list of advisors (id + email) for sharing reports.
+        """
+        from apps.users.models import User
+        advisors = User.objects.filter(role='Advisor').values('id', 'email')
+        return Response(list(advisors), status=status.HTTP_200_OK)
 
 
 class WorkExperienceViewSet(viewsets.ModelViewSet):
