@@ -38,6 +38,8 @@ class StudentCertification(AbstractAuditEntity):
     cert = models.ForeignKey(Certification, on_delete=models.CASCADE, related_name='students_with_cert')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Planning')
     completion_date = models.DateField(null=True, blank=True)
+    # New field for uploaded certificate document (stored locally)
+    document = models.FileField(upload_to='certificates/', null=True, blank=True)
 
     class Meta:
         unique_together = ('student', 'cert')
