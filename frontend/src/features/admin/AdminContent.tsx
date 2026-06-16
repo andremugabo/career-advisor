@@ -16,6 +16,7 @@ export default function AdminContent() {
   
   // Forms
   const [newSkillName, setNewSkillName] = useState('');
+  const [newSkillCategory, setNewSkillCategory] = useState('Technical');
   const [newCert, setNewCert] = useState({ name: '', provider: '', url: '' });
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function AdminContent() {
     e.preventDefault();
     if (!newSkillName.trim()) return;
     try {
-      await adminService.createSkill({ name: newSkillName });
+      await adminService.createSkill({ name: newSkillName, category: newSkillCategory });
       notify.success('Skill added to global dictionary.');
       setNewSkillName('');
       fetchData();
@@ -106,6 +107,14 @@ export default function AdminContent() {
             value={newSkillName} 
             onChange={e => setNewSkillName(e.target.value)} 
           />
+          <select
+            value={newSkillCategory}
+            onChange={e => setNewSkillCategory(e.target.value)}
+            className="p-2.5 rounded-lg border border-slate-300 bg-white text-sm"
+          >
+            <option value="Technical">Technical</option>
+            <option value="Soft">Soft</option>
+          </select>
           <Button type="submit" className="bg-[#146C94] hover:bg-[#19A7CE] px-4"><Plus className="w-5 h-5" /></Button>
         </form>
 
