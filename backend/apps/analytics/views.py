@@ -100,7 +100,7 @@ class SystemOverviewView(APIView):
         from apps.users.models import User
         from apps.profiles.models import Student
         from apps.audit.models import AuditLog
-        from apps.notifications.models import Notification
+        from apps.notifications.models import AdvisorMessage
 
         total_users = User.objects.count()
         active_users = User.objects.filter(is_active=True).count()
@@ -109,7 +109,7 @@ class SystemOverviewView(APIView):
         admins = User.objects.filter(role='Admin').count()
         total_profiles = Student.objects.count()
         total_audit_entries = AuditLog.objects.count()
-        unread_notifications = Notification.objects.filter(is_read=False).count()
+        unread_messages = AdvisorMessage.objects.filter(is_read=False).count()
 
         return Response({
             "users": {
@@ -123,5 +123,5 @@ class SystemOverviewView(APIView):
             },
             "profiles": total_profiles,
             "audit_entries": total_audit_entries,
-            "unread_notifications": unread_notifications,
+            "unread_notifications": unread_messages,
         }, status=status.HTTP_200_OK)
