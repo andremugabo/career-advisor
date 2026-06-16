@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { Card, Button, Pagination } from '../../components';
 import { advisorService } from '../../services';
 import { notify } from '../../lib/toast';
-import { MessageSquare, Send, Search, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, Send, Search, CheckCircle2, Share2, FileText } from 'lucide-react';
 
 export const AdvisorNotifications = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [sharedReports, setSharedReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,9 +25,10 @@ export const AdvisorNotifications = () => {
   const fetchData = async (page: number) => {
     setIsLoading(true);
     try {
-      const [notifData, studentData] = await Promise.all([
+      const [notifData, studentData, interventionsData] = await Promise.all([
         advisorService.getNotifications(page),
-        advisorService.getStudents() // For the dropdown
+        advisorService.getStudents(),
+        advisorService.getInterventions(),
       ]);
       setNotifications(notifData.results || notifData || []);
       setTotalItems(notifData.count || 0);
@@ -35,6 +37,9 @@ export const AdvisorNotifications = () => {
       if (studentsList.length > 0) {
         setRecipient(studentsList[0].id?.toString() || '');
       }
+      // Filter shared reports from interventions
+      const allInterventions = interventionsData.results || interventionsData || [];
+      setSharedReports(allInterventions.filter((i: any) => i.intervention_type === 'Report Shared'));
     } catch (error: any) {
       notify.error(error.message || 'Failed to load messages.');
     } finally {
@@ -56,7 +61,7 @@ export const AdvisorNotifications = () => {
       notify.success('Message sent successfully!');
       setSubject('');
       setMessage('');
-      fetchData(1); // Refresh the list
+      fetchData(1);
     } catch (error: any) {
       notify.error(error.message || 'Failed to send message.');
     } finally {
@@ -83,9 +88,38 @@ export const AdvisorNotifications = () => {
           Student Communications
         </h2>
         <p className="text-slate-500 mt-2">
-          Send guidance messages and announcements to your assigned students.
+          Send guidance messages and review student-shared AI career reports.
         </p>
       </div>
+
+      {/* Shared Reports Banner */}
+      {sharedReports.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-base font-bold text-[#146C94] flex items-center gap-2 mb-3">
+            <Share2 className="w-5 h-5 text-[#19A7CE]" />
+            Shared AI Career Reports
+            <span className="text-xs font-bold bg-[#19A7CE]/10 text-[#19A7CE] px-2 py-0.5 rounded-full">{sharedReports.length}</span>
+          </h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {sharedReports.map((report: any) => (
+              <div key={report.id} className="p-4 bg-gradient-to-br from-sky-50 to-white border border-sky-200 rounded-xl hover:shadow-md transition-all">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#19A7CE]/10 flex items-center justify-center shrink-0">
+                    <FileText size={18} className="text-[#19A7CE]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#146C94] truncate">{report.student_name || 'Student'}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{report.notes}</p>
+                    <p className="text-[10px] text-slate-400 mt-1.5">
+                      {new Date(report.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-[1fr_2fr] gap-8">
         {/* Compose Message */}

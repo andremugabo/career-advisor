@@ -158,7 +158,7 @@ class ProfileViewSet(viewsets.ViewSet):
         StudentIntervention.objects.create(
             student=student,
             advisor=advisor,
-            intervention_type='Career Counseling',
+            intervention_type='Report Shared',
             notes=f"Student {user.email} shared their AI career recommendations report for review.",
         )
 
