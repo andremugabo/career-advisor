@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from apps.profiles.models import Student
-from apps.profiles.serializers import StudentProfileSerializer
+from apps.profiles.models import Student, WorkExperience
+from apps.profiles.serializers import StudentProfileSerializer, WorkExperienceSerializer
 from apps.audit.models import AuditLog
+
 
 class ProfileViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -31,25 +32,29 @@ class ProfileViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method in ['PUT', 'PATCH', 'patch']:
-            prev_gpa = student.gpa
-            prev_current_year = student.current_year
-            prev_full_name = student.full_name
-            prev_bio = student.bio
+            # Snapshot all auditable fields before update
+            auditable_fields = [
+                'full_name', 'gpa', 'current_year', 'bio',
+                'phone_number', 'date_of_birth', 'profile_photo_url',
+                'institution_name', 'expected_graduation', 'courses_completed',
+                'career_goals', 'preferred_industries', 'extracurricular_activities',
+            ]
+            prev_values = {field: getattr(student, field) for field in auditable_fields}
 
-            serializer = StudentProfileSerializer(student, data=request.data, partial=(request.method == 'PATCH' or request.method == 'patch'))
+            serializer = StudentProfileSerializer(
+                student, data=request.data,
+                partial=(request.method == 'PATCH' or request.method == 'patch')
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # Track changes
+            # Track changes across all auditable fields
             changes = {}
-            if prev_gpa != student.gpa:
-                changes['gpa'] = {'from': prev_gpa, 'to': student.gpa}
-            if prev_current_year != student.current_year:
-                changes['current_year'] = {'from': prev_current_year, 'to': student.current_year}
-            if prev_full_name != student.full_name:
-                changes['full_name'] = {'from': prev_full_name, 'to': student.full_name}
-            if prev_bio != student.bio:
-                changes['bio'] = {'from': prev_bio, 'to': student.bio}
+            for field in auditable_fields:
+                new_val = getattr(student, field)
+                old_val = prev_values[field]
+                if str(old_val) != str(new_val):
+                    changes[field] = {'from': str(old_val), 'to': str(new_val)}
 
             if changes:
                 ip_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
@@ -62,7 +67,10 @@ class ProfileViewSet(viewsets.ViewSet):
                     modified_from_ip=ip_addr
                 )
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Re-serialize from fresh DB state to ensure computed fields are up-to-date
+            student.refresh_from_db()
+            fresh_serializer = StudentProfileSerializer(student)
+            return Response(fresh_serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], url_path='upload-transcript')
     def upload_transcript(self, request):
@@ -76,7 +84,7 @@ class ProfileViewSet(viewsets.ViewSet):
         except Student.DoesNotExist:
             return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        transcript_file = request.FILES.get('file')
+        transcript_file = request.FILES.get('transcript')
         if not transcript_file:
             return Response({"error": "No file uploaded. Please provide a PDF file."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -143,3 +151,56 @@ class ProfileViewSet(viewsets.ViewSet):
         )
         
         return Response({"message": "Report successfully shared with the advisor."}, status=status.HTTP_200_OK)
+
+
+class WorkExperienceViewSet(viewsets.ModelViewSet):
+    """
+    CRUD endpoints for student work experience entries.
+    GET    /api/profiles/work-experience/          — List all entries for the logged-in student
+    POST   /api/profiles/work-experience/          — Create a new entry
+    PATCH  /api/profiles/work-experience/<id>/      — Update an entry
+    DELETE /api/profiles/work-experience/<id>/      — Delete an entry
+    """
+    serializer_class = WorkExperienceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        try:
+            student = Student.objects.get(user=self.request.user)
+            return WorkExperience.objects.filter(student=student).order_by('-created_at')
+        except Student.DoesNotExist:
+            return WorkExperience.objects.none()
+
+    def perform_create(self, serializer):
+        try:
+            student = Student.objects.get(user=self.request.user)
+        except Student.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Student profile not found.")
+
+        ip_addr = self.request.META.get('REMOTE_ADDR', '127.0.0.1')
+        serializer.save(student=student)
+
+        AuditLog.objects.create(
+            user=self.request.user,
+            action="work_experience_added",
+            details={
+                "company": serializer.validated_data.get('company', ''),
+                "role": serializer.validated_data.get('role', ''),
+            },
+            created_by=self.request.user.email,
+            created_from_ip=ip_addr,
+            modified_from_ip=ip_addr
+        )
+
+    def perform_destroy(self, instance):
+        ip_addr = self.request.META.get('REMOTE_ADDR', '127.0.0.1')
+        AuditLog.objects.create(
+            user=self.request.user,
+            action="work_experience_removed",
+            details={"company": instance.company, "role": instance.role},
+            created_by=self.request.user.email,
+            created_from_ip=ip_addr,
+            modified_from_ip=ip_addr
+        )
+        instance.delete()
