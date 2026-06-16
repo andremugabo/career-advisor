@@ -21,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   // Custom vanilla CSS variants that will be hooked into index.css
   const variants = {
     primary: "btn-primary",
-    secondary: "bg-white/5 border border-white/10 hover:bg-white/10 text-white",
+    secondary: "bg-white border border-slate-200 hover:border-[#19A7CE] hover:bg-[#19A7CE]/5 text-[#146C94]",
     danger: "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
   };
 
