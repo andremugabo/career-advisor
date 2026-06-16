@@ -112,7 +112,11 @@ export const adminService = {
   sendNotification: async (data: { recipient: string; subject: string; message: string }) => {
     return apiFetch<any>('/notifications/', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        recipient: data.recipient,
+        subject: data.subject,
+        body: data.message,
+      }),
     });
   },
 

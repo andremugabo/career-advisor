@@ -25,7 +25,21 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.detail || `Request failed with status ${response.status}`);
+    
+    // Check for standard DRF error fields
+    if (errorData.error) {
+      throw new Error(errorData.error);
+    } else if (errorData.detail) {
+      throw new Error(errorData.detail);
+    } else if (typeof errorData === 'object' && Object.keys(errorData).length > 0) {
+      // It might be a DRF validation error like {"email": ["..."], "password": ["..."]}
+      const firstKey = Object.keys(errorData)[0];
+      const firstError = errorData[firstKey];
+      const errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
+      throw new Error(`${firstKey}: ${errorMsg}`);
+    }
+    
+    throw new Error(`Request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<T>;

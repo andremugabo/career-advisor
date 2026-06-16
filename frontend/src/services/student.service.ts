@@ -1,5 +1,5 @@
 import { apiFetch } from '../api/client';
-import { StudentProfile, PaginatedResponse, Recommendation, Internship } from '../types';
+import { StudentProfile, PaginatedResponse, Recommendation, Internship, WorkExperience } from '../types';
 
 export const studentService = {
   getProfile: async () => {
@@ -40,9 +40,12 @@ export const studentService = {
 
   // Career Assessment
   takeAssessment: async (answers: Record<string, any>) => {
-    return apiFetch<any>('/careers/assessments/', {
+    // Use the generic submit endpoint that accepts an "answers" payload
+    // If it's already wrapped in { answers }, just send it. Otherwise wrap it.
+    const payload = answers.answers ? answers : { answers };
+    return apiFetch<any>('/careers/assessments/submit/', {
       method: 'POST',
-      body: JSON.stringify(answers),
+      body: JSON.stringify(payload),
     });
   },
 
@@ -52,13 +55,21 @@ export const studentService = {
 
   // Favorites
   getFavoriteCareers: async () => {
-    return apiFetch<any[]>('/careers/favorites/');
+    const response = await apiFetch<any>('/careers/favorites/');
+    // Handle both paginated and non-paginated responses
+    return response.results || response || [];
   },
 
   toggleFavoriteCareer: async (careerId: string) => {
     return apiFetch<any>('/careers/favorites/', {
       method: 'POST',
       body: JSON.stringify({ career_id: careerId }),
+    });
+  },
+
+  removeFavoriteCareer: async (favoriteId: string) => {
+    return apiFetch<any>(`/careers/favorites/${favoriteId}/`, {
+      method: 'DELETE',
     });
   },
 
@@ -73,8 +84,9 @@ export const studentService = {
   },
 
   // Career Path Visualization
-  getCareerPathVisualization: async () => {
-    return apiFetch<any>('/careers/path-visualization/');
+  getCareerPathVisualization: async (careerId?: string) => {
+    const url = careerId ? `/careers/path-visualization/?career_id=${careerId}` : '/careers/path-visualization/';
+    return apiFetch<any>(url);
   },
 
   // Skill Gap Analysis
@@ -141,5 +153,29 @@ export const studentService = {
       body: JSON.stringify({ internship_id: internshipId })
     });
   },
-};
 
+  // --- Work Experience CRUD ---
+  getWorkExperiences: async () => {
+    return apiFetch<WorkExperience[]>('/profiles/work-experience/');
+  },
+
+  addWorkExperience: async (data: WorkExperience) => {
+    return apiFetch<WorkExperience>('/profiles/work-experience/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateWorkExperience: async (id: string, data: Partial<WorkExperience>) => {
+    return apiFetch<WorkExperience>(`/profiles/work-experience/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteWorkExperience: async (id: string) => {
+    return apiFetch<void>(`/profiles/work-experience/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+};
