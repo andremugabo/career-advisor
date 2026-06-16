@@ -139,7 +139,7 @@ The system follows a \textbf{decoupled client-server architecture}. The React fr
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/architecture.png}
+    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/architecture.png}
     \caption{High-Level System Architecture}
     \label{fig:architecture}
 \end{sidewaysfigure}
@@ -251,7 +251,7 @@ The system contains \textbf{20 database tables} across 13 domain modules. All re
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/erd.png}
+    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/erd.png}
     \caption{Complete Entity Relationship Diagram --- 20 Tables Across 13 Domain Modules}
     \label{fig:erd}
 \end{sidewaysfigure}
@@ -296,7 +296,7 @@ The AI engine is the core differentiator of this platform. It uses \textbf{cosin
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/ai_flow.png}
+    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/ai_flow.png}
     \caption{AI Career Recommendation Sequence Flow}
     \label{fig:ai_flow}
 \end{sidewaysfigure}
@@ -334,16 +334,18 @@ The AI engine is the core differentiator of this platform. It uses \textbf{cosin
 
 \subsection{Key Implementation Files}
 
-\begin{longtable}{p{6cm}p{8cm}}
+{\small
+\begin{longtable}{p{7cm}p{7cm}}
 \toprule
 \textbf{File} & \textbf{Responsibility} \\
 \midrule
-\texttt{ai/similarity/vectorizer.py} & Builds binary skill vectors from student profiles and career clusters \\
+\texttt{ai/similarity/vectorizer.py} & Builds keyword-bag vectors from student profiles and career clusters \\
 \texttt{ai/similarity/cosine.py} & Computes cosine similarity between two vectors \\
-\texttt{ai/recommenders/career\_recommender.py} & Orchestrates the full pipeline: collect skills $\rightarrow$ vectorize $\rightarrow$ compute similarity $\rightarrow$ rank $\rightarrow$ return \\
-\texttt{apps/recommendations/views.py} & DRF API endpoint that triggers the recommendation engine \\
+\texttt{ai/recommenders/career\_recommender.py} & Full pipeline: vectorize $\rightarrow$ similarity $\rightarrow$ rank $\rightarrow$ return \\
+\texttt{apps/recommendations/views.py} & DRF API endpoint that triggers the engine \\
 \bottomrule
 \end{longtable}
+}
 
 \newpage
 
@@ -357,7 +359,7 @@ The system uses a multi-step authentication process combining JWT tokens with em
 
 \begin{figure}[H!]
     \centering
-    \includegraphics[width=\textwidth,height=0.7\textheight,keepaspectratio]{diagrams/auth_flow.png}
+    \includegraphics[width=0.9\textwidth,height=0.65\textheight,keepaspectratio]{diagrams/auth_flow.png}
     \caption{Authentication and Registration Flow}
     \label{fig:auth_flow}
 \end{figure}
@@ -387,7 +389,7 @@ RBAC is enforced at two levels:
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/rbac.png}
+    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/rbac.png}
     \caption{Role-Based Access Control Flow --- Three-Tier Portal Routing}
     \label{fig:rbac}
 \end{sidewaysfigure}
@@ -438,7 +440,7 @@ The frontend follows a \textbf{feature-based architecture} where each page is a 
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/frontend.png}
+    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/frontend.png}
     \caption{Frontend Component Architecture --- 24 Pages, Service Layer, API Client}
     \label{fig:frontend}
 \end{sidewaysfigure}
@@ -543,7 +545,7 @@ POST & \texttt{/api/auth/reset-password/} & Reset password with OTP \\
 
 \subsection{Student Endpoints}
 
-\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
@@ -561,13 +563,13 @@ GET & \texttt{/api/internships/} & Browse internships \\
 POST & \texttt{/api/applications/} & Submit application \\
 GET & \texttt{/api/applications/} & List applications \\
 GET & \texttt{/api/resources/} & Browse resources \\
-GET & \texttt{/api/notifications/student-messages/} & View advisor messages \\
+GET & \texttt{/api/notifications/student-msgs/} & View advisor messages \\
 \bottomrule
 \end{longtable}
 
 \subsection{Advisor Endpoints}
 
-\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
@@ -575,13 +577,13 @@ GET & \texttt{/api/notifications/student-messages/} & View advisor messages \\
 GET & \texttt{/api/advisors/students/} & List all student profiles \\
 POST & \texttt{/api/advisors/interventions/} & Log an intervention \\
 GET & \texttt{/api/advisors/interventions/} & Intervention history \\
-POST & \texttt{/api/notifications/advisor-messages/} & Send message to student \\
+POST & \texttt{/api/notifications/advisor-msgs/} & Send message to student \\
 \bottomrule
 \end{longtable}
 
 \subsection{Admin Endpoints}
 
-\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
@@ -1038,7 +1040,7 @@ The project's \texttt{requirements.txt} contains the full Anaconda environment d
 \endhead
 \texttt{Django} & 5.2.1 & Web framework \\
 \texttt{djangorestframework} & latest & REST API endpoints \\
-\texttt{djangorestframework-simplejwt} & 5.5.1 & JWT authentication \\
+\texttt{drf-simplejwt} & 5.5.1 & JWT authentication \\
 \texttt{django-cors-headers} & latest & Cross-origin requests (CORS) \\
 \texttt{django-environ} & 0.13.0 & Environment variable parsing (\texttt{.env}) \\
 \texttt{django-otp} & 1.6.1 & One-time password support \\
