@@ -17,7 +17,7 @@ export default function AdminInternships() {
   
   // Form State for new internship
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({ title: '', company_name: '', location: '', description: '', url: '', cluster_id: 1 });
+  const [formData, setFormData] = useState({ title: '', company: '', location: '', description: '', url: '' });
 
   useEffect(() => {
     fetchData();
@@ -58,7 +58,7 @@ export default function AdminInternships() {
       await adminService.createInternship(formData);
       notify.success('New Internship Published!');
       setShowAddForm(false);
-      setFormData({ title: '', company_name: '', location: '', description: '', url: '', cluster_id: 1 });
+      setFormData({ title: '', company: '', location: '', description: '', url: '' });
       fetchData();
     } catch (error: any) {
       notify.error(error.message || 'Failed to publish internship.');
@@ -94,9 +94,13 @@ export default function AdminInternships() {
               ) : (
                 applications.map((app: any) => (
                   <tr key={app.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-4 font-medium text-[#146C94]">{app.student?.full_name || 'Unknown Student'}</td>
-                    <td className="py-4 text-sm text-slate-600">{app.internship?.title} @ {app.internship?.company_name}</td>
-                    <td className="py-4 text-sm text-slate-500">{new Date(app.applied_at).toLocaleDateString()}</td>
+                    <td className="py-4 font-medium text-[#146C94]">{app.student_name || 'Unknown Student'}</td>
+                    <td className="py-4 text-sm text-slate-600">{app.internship?.title} @ {app.internship?.company}</td>
+                    <td className="py-4 text-sm text-slate-500">
+                      {app.date_applied || app.created_at
+                        ? new Date(app.date_applied || app.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+                        : '—'}
+                    </td>
                     <td className="py-4 text-right">
                       <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#19A7CE]/10 text-[#146C94] border border-[#19A7CE]/20">
                         {app.status}
@@ -134,7 +138,7 @@ export default function AdminInternships() {
             <h4 className="text-lg font-bold text-[#146C94] mb-4">Post a New Opportunity</h4>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <input type="text" placeholder="Job Title" required className="p-2.5 rounded-lg border border-slate-300" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-              <input type="text" placeholder="Company Name" required className="p-2.5 rounded-lg border border-slate-300" value={formData.company_name} onChange={e => setFormData({...formData, company_name: e.target.value})} />
+              <input type="text" placeholder="Company Name" required className="p-2.5 rounded-lg border border-slate-300" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} />
               <input type="text" placeholder="Location" required className="p-2.5 rounded-lg border border-slate-300" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
               <input type="url" placeholder="Application URL" required className="p-2.5 rounded-lg border border-slate-300" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} />
             </div>
@@ -152,7 +156,7 @@ export default function AdminInternships() {
               <div>
                 <h4 className="font-bold text-[#146C94]">{intern.title}</h4>
                 <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                  <Building className="w-3.5 h-3.5" /> {intern.company_name} • {intern.location}
+                  <Building className="w-3.5 h-3.5" /> {intern.company} • {intern.location}
                 </div>
               </div>
               <div className="flex items-center gap-2">
