@@ -19,6 +19,9 @@
 \usepackage{float}
 \usepackage{caption}
 \usepackage{parskip}
+\usepackage{rotating}
+\usepackage[export]{adjustbox}
+\usepackage{afterpage}
 
 % ──────────────────────────────────────────────────────────────
 % STYLING
@@ -126,13 +129,6 @@ The platform provides an integrated solution with three user portals:
 
 The system follows a \textbf{decoupled client-server architecture}. The React frontend communicates with the Django backend exclusively through RESTful API endpoints, authenticated via JWT tokens.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{diagrams/architecture.png}
-    \caption{High-Level System Architecture}
-    \label{fig:architecture}
-\end{figure}
-
 \textbf{Key architectural decisions:}
 \begin{itemize}
     \item \textbf{Monorepo structure}: Both \texttt{backend/} and \texttt{frontend/} live in a single repository for simplified deployment.
@@ -141,7 +137,12 @@ The system follows a \textbf{decoupled client-server architecture}. The React fr
     \item \textbf{Role-Based Access Control (RBAC)}: Enforced at both the frontend (layout guards) and backend (DRF permission classes) levels.
 \end{itemize}
 
-\newpage
+\begin{sidewaysfigure}[p]
+    \centering
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/architecture.png}
+    \caption{High-Level System Architecture}
+    \label{fig:architecture}
+\end{sidewaysfigure}
 
 % ══════════════════════════════════════════════════════════════
 \section{Technology Stack}
@@ -246,14 +247,14 @@ This ensures every record in the database has:
 
 \subsection{Database Schema (Entity Relationship Diagram)}
 
-The system contains \textbf{20 database tables} across 13 domain modules. All relationships use UUIDs as foreign keys.
+The system contains \textbf{20 database tables} across 13 domain modules. All relationships use UUIDs as foreign keys. The full ERD is shown on the following landscape page.
 
-\begin{figure}[H]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textwidth]{diagrams/erd.png}
-    \caption{Complete Entity Relationship Diagram}
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/erd.png}
+    \caption{Complete Entity Relationship Diagram --- 20 Tables Across 13 Domain Modules}
     \label{fig:erd}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsubsection{Key Models Explained}
 
@@ -293,12 +294,12 @@ The AI engine is the core differentiator of this platform. It uses \textbf{cosin
 
 \subsection{How It Works}
 
-\begin{figure}[H]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textwidth]{diagrams/ai_flow.png}
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/ai_flow.png}
     \caption{AI Career Recommendation Sequence Flow}
     \label{fig:ai_flow}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsection{Step-by-Step Process}
 
@@ -354,9 +355,9 @@ The AI engine is the core differentiator of this platform. It uses \textbf{cosin
 
 The system uses a multi-step authentication process combining JWT tokens with email OTP verification.
 
-\begin{figure}[H]
+\begin{figure}[H!]
     \centering
-    \includegraphics[width=\textwidth]{diagrams/auth_flow.png}
+    \includegraphics[width=\textwidth,height=0.7\textheight,keepaspectratio]{diagrams/auth_flow.png}
     \caption{Authentication and Registration Flow}
     \label{fig:auth_flow}
 \end{figure}
@@ -384,12 +385,12 @@ Upon registration, the system:
 
 RBAC is enforced at two levels:
 
-\begin{figure}[H]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textwidth]{diagrams/rbac.png}
-    \caption{Role-Based Access Control Flow}
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/rbac.png}
+    \caption{Role-Based Access Control Flow --- Three-Tier Portal Routing}
     \label{fig:rbac}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsubsection{Backend Permission Classes}
 
@@ -435,12 +436,12 @@ Admins can export the full audit log as CSV via \texttt{GET /api/audit/export-cs
 
 The frontend follows a \textbf{feature-based architecture} where each page is a self-contained component that communicates with the backend through a dedicated service layer.
 
-\begin{figure}[H]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textwidth]{diagrams/frontend.png}
-    \caption{Frontend Component Architecture}
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{diagrams/frontend.png}
+    \caption{Frontend Component Architecture --- 24 Pages, Service Layer, API Client}
     \label{fig:frontend}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsection{Directory Structure}
 
