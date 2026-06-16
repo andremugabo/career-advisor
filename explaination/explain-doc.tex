@@ -681,52 +681,610 @@ Student & \texttt{test\_student\_api@auca.ac.rw} & \texttt{studentpass123} \\
 \end{longtable}
 
 % ══════════════════════════════════════════════════════════════
-\section{How to Run the Project}
+\section{Critical Backend Configuration Files}
 % ══════════════════════════════════════════════════════════════
 
-\subsection{Prerequisites}
+This section documents every critical configuration file that controls how the backend connects to the database, authenticates users, handles errors, and logs audit trails.
+
+\subsection{Django Settings --- \texttt{config/settings/base.py}}
+
+The settings system is split into a modular hierarchy inside \texttt{config/settings/}:
+
 \begin{itemize}
-    \item Python 3.10+ installed
-    \item PostgreSQL installed and running
-    \item Node.js 18+ and npm installed
-    \item A Gmail account with an App Password for SMTP
+    \item \texttt{base.py} --- Contains all shared configuration (database, JWT, CORS, installed apps, middleware, REST framework). This is the primary file.
+    \item \texttt{dev.py} --- Extends \texttt{base.py} with \texttt{DEBUG=True} and \texttt{ALLOWED\_HOSTS=['*']}.
+    \item \texttt{prod.py} --- Placeholder for production overrides (HTTPS, strict CORS, etc.).
+    \item \texttt{\_\_init\_\_.py} --- Empty file enabling Python package imports.
 \end{itemize}
 
-\subsection{Backend Setup}
+When Django starts via \texttt{manage.py}, it uses \texttt{config.settings.dev} by default:
+
+\begin{lstlisting}[language=Python, caption={manage.py --- Default Settings Module}]
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
+\end{lstlisting}
+
+\subsubsection{Database Connection}
+
+The database URL is loaded from the \texttt{.env} file using the \texttt{django-environ} library. This means the connection string is \textbf{never hardcoded} in the settings file:
+
+\begin{lstlisting}[language=Python, caption={Database Configuration in base.py}]
+import environ
+
+# Initialize environ and read .env file
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")
+
+# Parse the DATABASE_URL environment variable from .env
+DATABASES = {
+    "default": env.db("DATABASE_URL",
+        default="sqlite:///db.sqlite3"
+    )
+}
+\end{lstlisting}
+
+The \texttt{DATABASE\_URL} format is: \texttt{postgres://USER:PASSWORD@HOST:PORT/DBNAME}
+
+\textbf{Fallback behavior}: If no \texttt{.env} file is present, it falls back to SQLite (\texttt{db.sqlite3}) for quick local testing.
+
+\subsubsection{JWT Token Configuration}
+
+JWT tokens are managed by \texttt{djangorestframework-simplejwt}. The settings control token lifetimes and rotation:
+
+\begin{lstlisting}[language=Python, caption={JWT Configuration in base.py}]
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
+\end{lstlisting}
+
+\textbf{Key details}:
+\begin{itemize}
+    \item Access tokens expire after \textbf{60 minutes}.
+    \item Refresh tokens last \textbf{7 days}.
+    \item \texttt{ROTATE\_REFRESH\_TOKENS=True}: Every refresh generates a new refresh token.
+    \item \texttt{USER\_ID\_FIELD='id'}: Uses the UUID primary key as the token claim.
+\end{itemize}
+
+\subsubsection{REST Framework Global Configuration}
+
+\begin{lstlisting}[language=Python, caption={REST Framework Configuration in base.py}]
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS':
+        'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication
+            .JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PAGINATION_CLASS':
+        'core.pagination.StandardResultsSetPagination',
+    'EXCEPTION_HANDLER':
+        'core.exceptions.custom_exception_handler',
+}
+\end{lstlisting}
+
+\textbf{This means}:
+\begin{itemize}
+    \item \textbf{All endpoints are protected by default} --- only authenticated users (with valid JWT tokens) can access them. Public endpoints explicitly override this with \texttt{permissions.AllowAny}.
+    \item All list endpoints are automatically paginated (20 items per page).
+    \item Errors include the HTTP status code in the JSON response body.
+    \item The Swagger documentation is auto-generated from code annotations.
+\end{itemize}
+
+\subsubsection{Installed Apps and Middleware Stack}
+
+\begin{lstlisting}[language=Python, caption={13 Local Apps Registered in base.py}]
+INSTALLED_APPS = [
+    # Third Party
+    "rest_framework",
+    "corsheaders",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    # Django Built-ins (6 apps)
+    "django.contrib.admin",  ...
+    # Local Apps (13 domain modules)
+    "core",
+    "apps.authentication",
+    "apps.users",
+    "apps.profiles",
+    "apps.skills",
+    "apps.careers",
+    "apps.recommendations",
+    "apps.internships",
+    "apps.applications",
+    "apps.advisors",
+    "apps.analytics",
+    "apps.resources",
+    "apps.notifications",
+    "apps.audit",
+]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Middleware Stack (order matters)}]
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.GlobalAuditMiddleware",  # Custom
+]
+\end{lstlisting}
+
+\textbf{CORS}: \texttt{CORS\_ALLOW\_ALL\_ORIGINS = True} allows the React frontend on port 3000 to call the Django API on port 8000 without cross-origin blocking.
+
+\subsubsection{Email Configuration}
+
+Email settings (SMTP host, port, credentials) are loaded from the \texttt{.env} file:
+
+\begin{lstlisting}[language=Python, caption={Email Settings in base.py}]
+EMAIL_BACKEND = env("EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL",
+    default="webmaster@localhost")
+\end{lstlisting}
+
+\textbf{Fallback}: Without a \texttt{.env} file, emails print to the console instead of sending via SMTP.
+
+\subsection{Environment File --- \texttt{backend/.env}}
+
+The \texttt{.env} file contains \textbf{all secret credentials}. It is \textbf{not committed to Git}. Here is its structure:
+
+\begin{lstlisting}[caption={Complete .env File Template}]
+# Django Secret Key
+SECRET_KEY="django-insecure-your-secret-key"
+
+# PostgreSQL Connection String
+DATABASE_URL="postgres://postgres:123@localhost:5432
+    /career-advisor_db"
+
+# Secure SMTP Configuration for Gmail
+EMAIL_BACKEND="django.core.mail.backends.smtp
+    .EmailBackend"
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER="your-email@gmail.com"
+EMAIL_HOST_PASSWORD="your-gmail-app-password"
+DEFAULT_FROM_EMAIL="your-email@gmail.com"
+\end{lstlisting}
+
+\textbf{How to get a Gmail App Password}:
+\begin{enumerate}
+    \item Go to Google Account $\rightarrow$ Security $\rightarrow$ 2-Step Verification (must be enabled)
+    \item Scroll to ``App passwords'' and generate a new one for ``Mail''
+    \item Paste the 16-character password into \texttt{EMAIL\_HOST\_PASSWORD}
+\end{enumerate}
+
+\subsection{Custom User Model --- \texttt{apps/users/models.py}}
+
+Django's built-in \texttt{User} model uses a username. This project replaces it with a \textbf{custom model using email as the login field}:
+
+\begin{lstlisting}[language=Python, caption={Custom User Model}]
+class User(AbstractBaseUser, PermissionsMixin,
+           AbstractAuditEntity):
+    ROLE_CHOICES = (
+        ('Student', 'Student'),
+        ('Advisor', 'Advisor'),
+        ('Admin', 'Admin'),
+    )
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20,
+        choices=ROLE_CHOICES, default='Student')
+    mfa_enabled = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    failed_login_attempts = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = CustomUserManager()
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+\end{lstlisting}
+
+Registered in settings as: \texttt{AUTH\_USER\_MODEL = 'users.User'}
+
+\subsection{Global Audit Middleware --- \texttt{core/middleware.py}}
+
+Every POST, PUT, PATCH, and DELETE request to any \texttt{/api/} endpoint is automatically logged by the \texttt{GlobalAuditMiddleware}:
+
+\begin{lstlisting}[language=Python, caption={GlobalAuditMiddleware --- Automatic Request Logging}]
+class GlobalAuditMiddleware(MiddlewareMixin):
+    def process_response(self, request, response):
+        if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            if request.path.startswith('/api/'):
+                # Extract IP address (proxy-aware)
+                x_forwarded_for = request.META.get(
+                    'HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    ip = x_forwarded_for.split(',')[0].strip()
+                else:
+                    ip = request.META.get('REMOTE_ADDR')
+
+                AuditLog.objects.create(
+                    user=request.user if authenticated,
+                    action=f"API_{request.method}",
+                    details={
+                        'path': request.path,
+                        'method': request.method,
+                        'status_code': response.status_code,
+                        'ip_address': ip
+                    },
+                    created_from_ip=ip
+                )
+        return response
+\end{lstlisting}
+
+\textbf{Key behavior}:
+\begin{itemize}
+    \item GET requests are \textbf{not logged} to avoid flooding the audit table.
+    \item Auth-related paths (\texttt{/auth/login/}, \texttt{/auth/register/}) get sanitized labels.
+    \item The client IP is extracted with proxy-awareness (\texttt{X-Forwarded-For} header).
+\end{itemize}
+
+\subsection{Pagination --- \texttt{core/pagination.py}}
+
+\begin{lstlisting}[language=Python, caption={Standard Pagination Configuration}]
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+\end{lstlisting}
+
+Every list endpoint returns 20 items per page. The client can override this with \texttt{?page\_size=50} (up to 100).
+
+\subsection{Exception Handler --- \texttt{core/exceptions.py}}
+
+\begin{lstlisting}[language=Python, caption={Custom Exception Handler}]
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+    if response is not None:
+        response.data['status_code'] = response.status_code
+    return response
+\end{lstlisting}
+
+This adds a \texttt{status\_code} field to every error JSON response, making it easier for the frontend to inspect errors programmatically.
+
+\subsection{Frontend API Client --- \texttt{frontend/src/api/client.ts}}
+
+The frontend communicates with the backend through a centralized API client:
+
+\begin{lstlisting}[caption={Frontend API Client (TypeScript)}]
+const BASE_URL = 'http://localhost:8000/api';
+
+export async function apiFetch<T>(
+    endpoint: string,
+    options: RequestInit = {}
+): Promise<T> {
+    const token =
+        localStorage.getItem('access_token');
+
+    const headers = new Headers(options.headers);
+    if (token)
+        headers.set('Authorization',
+            `Bearer ${token}`);
+    if (!(options.body instanceof FormData))
+        headers.set('Content-Type',
+            'application/json');
+
+    const response = await fetch(
+        `${BASE_URL}${endpoint}`, { ...options, headers }
+    );
+
+    if (response.status === 401) {
+        // Token expired: clear and redirect
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
+    }
+    // ... error handling
+    return response.json();
+}
+\end{lstlisting}
+
+\textbf{Key design decisions}:
+\begin{itemize}
+    \item JWT token is read from \texttt{localStorage} and attached to every request as \texttt{Authorization: Bearer <token>}.
+    \item 401 responses automatically clear the token and redirect to login.
+    \item \texttt{FormData} requests (file uploads) skip the \texttt{Content-Type} header to let the browser set the boundary.
+\end{itemize}
+
+\subsection{Admin Script --- \texttt{create\_admin.py}}
+
+This standalone script creates or resets the master admin account:
+
+\begin{lstlisting}[language=Python, caption={create\_admin.py --- Admin Account Setup}]
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+    'config.settings.base')
+django.setup()
+from apps.users.models import User
+
+admin_email = 'admin@auca.ac.rw'
+admin_pass = '123'
+
+if not User.objects.filter(email=admin_email).exists():
+    User.objects.create_superuser(
+        admin_email, admin_pass)
+else:
+    user = User.objects.get(email=admin_email)
+    user.set_password(admin_pass)
+    user.save()
+\end{lstlisting}
+
+\subsection{Key Python Dependencies}
+
+The project's \texttt{requirements.txt} contains the full Anaconda environment dump. The \textbf{critical project-specific packages} are:
+
+\begin{longtable}{p{5cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Package} & \textbf{Version} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{Django} & 5.2.1 & Web framework \\
+\texttt{djangorestframework} & latest & REST API endpoints \\
+\texttt{djangorestframework-simplejwt} & 5.5.1 & JWT authentication \\
+\texttt{django-cors-headers} & latest & Cross-origin requests (CORS) \\
+\texttt{django-environ} & 0.13.0 & Environment variable parsing (\texttt{.env}) \\
+\texttt{django-otp} & 1.6.1 & One-time password support \\
+\texttt{drf-spectacular} & 0.29.0 & OpenAPI 3.0 / Swagger UI \\
+\texttt{psycopg2-binary} & 2.9.10 & PostgreSQL database driver \\
+\texttt{PyJWT} & latest & JWT token encoding/decoding \\
+\texttt{PyPDF2} & 3.0.1 & PDF transcript parsing \\
+\texttt{reportlab} & 4.2.0 & PDF report generation \\
+\texttt{fpdf} & 1.7.2 & Lightweight PDF creation \\
+\texttt{pyotp} & 2.9.0 & TOTP/HOTP OTP generation \\
+\texttt{sqlparse} & latest & SQL query formatting \\
+\bottomrule
+\end{longtable}
+
+\subsection{Frontend Dependencies --- \texttt{package.json}}
+
+\begin{longtable}{p{5cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Package} & \textbf{Version} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{react} & 18.3.1 & UI component library \\
+\texttt{react-dom} & 18.3.1 & DOM rendering \\
+\texttt{react-router-dom} & 6.23.1 & Client-side routing with RBAC guards \\
+\texttt{recharts} & 2.12.7 & Data visualization charts \\
+\texttt{lucide-react} & 0.379.0 & SVG icon library \\
+\texttt{react-hot-toast} & 2.6.0 & Toast notification system \\
+\texttt{vite} & 5.2.11 & Build tool and dev server \\
+\texttt{typescript} & 5.2.2 & Type-safe JavaScript \\
+\texttt{tailwindcss} & 3.4.19 & Utility-first CSS framework \\
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{How to Run the Project --- Step by Step}
+% ══════════════════════════════════════════════════════════════
+
+Follow these steps \textbf{in exact order} to set up and run the entire project from scratch on a new machine.
+
+\subsection{Step 1: Install Prerequisites}
+
+Before anything else, make sure these tools are installed on your system:
+
+\begin{longtable}{p{4cm}p{3cm}p{7cm}}
+\toprule
+\textbf{Tool} & \textbf{Min Version} & \textbf{How to Verify} \\
+\midrule
+\endhead
+Python & 3.10+ & \texttt{python3 --version} \\
+PostgreSQL & 13+ & \texttt{psql --version} \\
+Node.js & 18+ & \texttt{node --version} \\
+npm & 9+ & \texttt{npm --version} \\
+Git & Any & \texttt{git --version} \\
+\bottomrule
+\end{longtable}
+
+\subsection{Step 2: Clone the Repository}
+
 \begin{lstlisting}[language=bash]
-# Clone the repository
 git clone https://github.com/andremugabo/career-advisor.git
-cd career-advisor/backend
+cd career-advisor
+\end{lstlisting}
 
-# Activate virtual environment
-source venv/bin/activate  # Windows: venv\Scripts\activate
+The project structure after cloning:
+\begin{lstlisting}[language=bash]
+career-advisor/
+  backend/          # Django REST API
+  frontend/         # React + Vite client
+  explaination/     # This documentation
+  docs/             # Thesis LaTeX assets
+  README.md
+\end{lstlisting}
 
-# Create .env file with database credentials
-# Run migrations and seed data
+\subsection{Step 3: Create the PostgreSQL Database}
+
+Open a terminal and create the database:
+
+\begin{lstlisting}[language=bash]
+# Connect to PostgreSQL as the postgres user
+psql -U postgres
+
+# Inside the psql shell, run:
+CREATE DATABASE "career-advisor_db";
+
+# Verify it was created:
+\l
+
+# Exit psql:
+\q
+\end{lstlisting}
+
+\textbf{Note}: The database name must be exactly \texttt{career-advisor\_db} to match the connection string in the \texttt{.env} file. If your PostgreSQL password is not \texttt{123}, update the \texttt{.env} file accordingly.
+
+\subsection{Step 4: Configure the Backend Environment}
+
+Navigate to the backend directory and activate the Python virtual environment:
+
+\begin{lstlisting}[language=bash]
+cd backend
+
+# Activate the virtual environment
+source venv/bin/activate
+# On Windows: venv\Scripts\activate
+
+# Verify Python is from the venv:
+which python
+# Should show: .../career-advisor/backend/venv/bin/python
+\end{lstlisting}
+
+\textbf{Important}: On macOS/Linux, if you see \texttt{zsh: command not found: python}, use \texttt{python3} instead, or activate the virtual environment first.
+
+\subsection{Step 5: Create the Environment File}
+
+Create a file called \texttt{.env} inside \texttt{backend/}:
+
+\begin{lstlisting}[caption={backend/.env --- Required Environment Variables}]
+# Secret key for Django
+SECRET_KEY="django-insecure-your-secret-key-here"
+
+# PostgreSQL connection
+DATABASE_URL="postgres://postgres:123@localhost:5432
+    /career-advisor_db"
+
+# Gmail SMTP for email OTP
+EMAIL_BACKEND="django.core.mail.backends.smtp
+    .EmailBackend"
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER="your-email@gmail.com"
+EMAIL_HOST_PASSWORD="your-16-char-app-password"
+DEFAULT_FROM_EMAIL="your-email@gmail.com"
+\end{lstlisting}
+
+\textbf{Replace} the placeholder values with your actual PostgreSQL password and Gmail App Password.
+
+\subsection{Step 6: Run Database Migrations}
+
+Migrations create all 20 database tables from the Django model definitions:
+
+\begin{lstlisting}[language=bash]
 python manage.py migrate
-python manage.py seed_onet
-python manage.py seed_certs
-python manage.py seed_internships
-python create_admin.py
+\end{lstlisting}
 
-# Start the development server
+Expected output: 40+ lines of ``Applying apps.users.0001\_initial\ldots OK'' messages.
+
+\subsection{Step 7: Seed the Database}
+
+The system requires seed data to function. Run these commands \textbf{in order}:
+
+\begin{lstlisting}[language=bash]
+# 1. Seed 904 O*NET career clusters with skills
+#    (takes ~30 seconds, reads from dataset/ CSV files)
+python manage.py seed_onet
+
+# 2. Seed professional certifications (AWS, Google, etc.)
+python manage.py seed_certs
+
+# 3. Seed mock internship postings
+python manage.py seed_internships
+\end{lstlisting}
+
+\subsection{Step 8: Create the Admin User}
+
+\begin{lstlisting}[language=bash]
+python create_admin.py
+\end{lstlisting}
+
+Expected output: \texttt{Master superuser created: admin@auca.ac.rw}
+
+\subsection{Step 9: Start the Backend Server}
+
+\begin{lstlisting}[language=bash]
 python manage.py runserver
 \end{lstlisting}
 
-\subsection{Frontend Setup}
+Expected output:
+\begin{lstlisting}[language=bash]
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+\end{lstlisting}
+
+\textbf{Verify}: Open \url{http://127.0.0.1:8000/api/docs/} in a browser. You should see the Swagger UI.
+
+\subsection{Step 10: Set Up the Frontend}
+
+Open a \textbf{new terminal tab} (keep the backend server running in the first tab):
+
 \begin{lstlisting}[language=bash]
 cd career-advisor/frontend
+
+# Install Node.js dependencies
 npm install
+
+# Start the development server
 npm run dev
 \end{lstlisting}
 
-\subsection{Access Points}
+Expected output:
+\begin{lstlisting}[language=bash]
+  VITE v5.2.11  ready in 300 ms
+  ->  Local:   http://localhost:3000/
+\end{lstlisting}
+
+\subsection{Step 11: Verify the Full System}
+
+Open \url{http://localhost:3000} in a browser. You should see the landing page.
+
+\textbf{Login with the test accounts}:
+
+\begin{longtable}{p{3cm}p{5.5cm}p{3cm}}
+\toprule
+\textbf{Role} & \textbf{Email} & \textbf{Password} \\
+\midrule
+Admin & \texttt{admin@auca.ac.rw} & \texttt{123} \\
+Advisor & \texttt{test\_advisor\_api@auca.ac.rw} & \texttt{advisorpass123} \\
+Student & \texttt{test\_student\_api@auca.ac.rw} & \texttt{studentpass123} \\
+\bottomrule
+\end{longtable}
+
+Each role redirects to a different dashboard:
 \begin{itemize}
-    \item \textbf{Frontend}: \url{http://localhost:3000}
-    \item \textbf{Backend API}: \url{http://localhost:8000}
-    \item \textbf{Swagger Docs}: \url{http://localhost:8000/api/docs/}
-    \item \textbf{Django Admin}: \url{http://localhost:8000/admin/}
+    \item \textbf{Student} $\rightarrow$ \texttt{/dashboard} (12 pages accessible)
+    \item \textbf{Advisor} $\rightarrow$ \texttt{/advisor/home} (5 pages accessible)
+    \item \textbf{Admin} $\rightarrow$ \texttt{/admin/dashboard} (6 pages accessible)
 \end{itemize}
+
+\subsection{Common Troubleshooting}
+
+\begin{longtable}{p{5cm}p{9cm}}
+\toprule
+\textbf{Problem} & \textbf{Solution} \\
+\midrule
+\endhead
+\texttt{zsh: command not found: python} & Use \texttt{python3} or activate the venv first: \texttt{source venv/bin/activate} \\
+\texttt{FATAL: database does not exist} & Create it: \texttt{psql -U postgres -c 'CREATE DATABASE "career-advisor\_db"'} \\
+\texttt{FATAL: password authentication failed} & Check the PostgreSQL password in your \texttt{.env} matches your \texttt{psql} password \\
+\texttt{Port 8000 already in use} & Kill the existing process: \texttt{kill -9 \$(lsof -t -i:8000)} \\
+\texttt{Port 3000 already in use} & Kill the existing process: \texttt{kill -9 \$(lsof -t -i:3000)} \\
+Swagger page shows no endpoints & Verify all 13 local apps are in \texttt{INSTALLED\_APPS} \\
+Frontend shows CORS error & Verify \texttt{CORS\_ALLOW\_ALL\_ORIGINS = True} in base.py \\
+Email OTP not received & Check Gmail App Password and \texttt{EMAIL\_USE\_TLS=True} \\
+\bottomrule
+\end{longtable}
 
 \newpage
 
@@ -735,8 +1293,11 @@ npm run dev
 % ══════════════════════════════════════════════════════════════
 
 \subsection{Automated Integration Tests}
+
+Run these commands from the \texttt{backend/} directory with the virtual environment activated:
+
 \begin{lstlisting}[language=bash]
-# Full feature integration test
+# Full feature integration test (requires running server)
 python manage.py test_all_features
 
 # Server connectivity check
@@ -745,14 +1306,22 @@ python dataset/test_server_connectivity.py
 
 The integration test suite covers:
 \begin{itemize}
-    \item User registration and authentication
+    \item User registration and authentication (JWT token flow)
     \item Profile creation and updating (with audit log verification)
     \item Skill and certification CRUD operations
-    \item AI recommendation generation
-    \item Internship search and application
-    \item Advisor access restrictions (403 Forbidden for students)
-    \item Audit log completeness
+    \item AI recommendation generation and ranking
+    \item Internship search and application submission
+    \item Advisor access restrictions (403 Forbidden for student tokens)
+    \item Audit log completeness and IP tracking
 \end{itemize}
+
+\subsection{Manual Testing via Swagger UI}
+
+\begin{enumerate}
+    \item Open \url{http://127.0.0.1:8000/api/docs/}
+    \item Click \textbf{Authorize} and enter a JWT access token (obtained from \texttt{POST /api/token/})
+    \item Test any endpoint interactively
+\end{enumerate}
 
 % ══════════════════════════════════════════════════════════════
 \section{Summary of Functional Requirements}
