@@ -127,7 +127,7 @@ class ProfileViewSet(viewsets.ViewSet):
         """
         POST /api/profiles/share-report/
         Shares the student's career report with an advisor.
-        Creates a notification message for the advisor.
+        Creates an intervention record visible to both student and advisor.
         """
         user = request.user
         advisor_id = request.data.get('advisor_id')
@@ -140,20 +140,26 @@ class ProfileViewSet(viewsets.ViewSet):
         except Student.DoesNotExist:
             return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Try to find the advisor user
+        # Find the advisor user and their advisor profile
         from apps.users.models import User
+        from apps.advisors.models import Advisor
         try:
             advisor_user = User.objects.get(id=advisor_id, role='Advisor')
         except User.DoesNotExist:
             return Response({"error": "Advisor not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Create a notification for the advisor
-        from apps.notifications.models import AdvisorMessage
-        AdvisorMessage.objects.create(
-            sender=user,
-            recipient=advisor_user,
-            subject=f"Career Report Shared by {user.email}",
-            body=f"Student {user.email} has shared their AI career recommendations report with you for review. Please check their profile in the advisor dashboard.",
+        # Get or create advisor profile
+        advisor, _ = Advisor.objects.get_or_create(
+            user=advisor_user,
+            defaults={'specialization': 'General Guidance', 'department': 'Academic Affairs'}
+        )
+
+        # Create an intervention record (visible to both sides)
+        StudentIntervention.objects.create(
+            student=student,
+            advisor=advisor,
+            intervention_type='Career Counseling',
+            notes=f"Student {user.email} shared their AI career recommendations report for review.",
         )
 
         # Audit log
