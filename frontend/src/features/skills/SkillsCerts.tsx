@@ -3,7 +3,7 @@ import { Card } from '../../components';
 import { studentService } from '../../services';
 import { skillService } from '../../services';
 import { notify } from '../../lib/toast';
-import { Brain, BookOpen, Award, AlertCircle, Search, Plus, Star, Trash2 } from 'lucide-react';
+import { Brain, BookOpen, Award, AlertCircle, Search, Plus, Star, Trash2, ChevronDown } from 'lucide-react';
 import { StudentProfile, Skill } from '../../types';
 
 const PROFICIENCY_LEVELS = [
@@ -11,6 +11,12 @@ const PROFICIENCY_LEVELS = [
   { value: 'Intermediate', label: 'Intermediate', color: 'bg-sky-100 text-sky-700 border-sky-200' },
   { value: 'Advanced', label: 'Advanced', color: 'bg-violet-100 text-violet-700 border-violet-200' },
   { value: 'Expert', label: 'Expert', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+];
+
+const CERT_STATUSES = [
+  { value: 'Planning', label: 'Planning' },
+  { value: 'In Progress', label: 'In Progress' },
+  { value: 'Completed', label: 'Completed' },
 ];
 
 export const SkillsCerts = () => {
@@ -24,8 +30,17 @@ export const SkillsCerts = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
+  // Certification enrollment state
+  const [availableCerts, setAvailableCerts] = useState<any[]>([]);
+  const [showCertForm, setShowCertForm] = useState(false);
+  const [selectedCertId, setSelectedCertId] = useState<number | null>(null);
+  const [certStatus, setCertStatus] = useState('Planning');
+  const [certCompletionDate, setCertCompletionDate] = useState('');
+  const [isEnrolling, setIsEnrolling] = useState(false);
+
   useEffect(() => {
     fetchProfile();
+    fetchAvailableCerts();
   }, []);
 
   const fetchProfile = async () => {
@@ -37,6 +52,15 @@ export const SkillsCerts = () => {
       notify.error(error.message || 'Failed to load skills matrix.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAvailableCerts = async () => {
+    try {
+      const certs = await skillService.listCertifications();
+      setAvailableCerts(certs);
+    } catch {
+      // silently fail — certs list is optional
     }
   };
 
@@ -84,6 +108,28 @@ export const SkillsCerts = () => {
     }
   };
 
+  const handleEnrollCert = async () => {
+    if (!selectedCertId) return;
+    setIsEnrolling(true);
+    try {
+      await skillService.enrollCertification(
+        selectedCertId,
+        certStatus,
+        certCompletionDate || undefined
+      );
+      notify.success('Certification added to your profile!');
+      fetchProfile();
+      setSelectedCertId(null);
+      setCertStatus('Planning');
+      setCertCompletionDate('');
+      setShowCertForm(false);
+    } catch (e) {
+      notify.error('Failed to add certification');
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
   if (isLoading || !profile) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-[#146C94] animate-pulse">
@@ -98,6 +144,10 @@ export const SkillsCerts = () => {
   const hasCerts = profile.certifications && profile.certifications.length > 0;
 
   const inputClass = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#19A7CE] focus:ring-2 focus:ring-[#19A7CE]/10 transition-all";
+
+  // Filter out certs the student already has
+  const enrolledCertIds = (profile.certifications || []).map((c: any) => c.name);
+  const unenrolledCerts = availableCerts.filter(c => !enrolledCertIds.includes(c.name));
 
   return (
     <div className="space-y-8 animate-fade-in pb-12 max-w-5xl mx-auto">
@@ -263,7 +313,7 @@ export const SkillsCerts = () => {
             </div>
             <div>
               <h3 className="text-xl font-bold text-[#146C94] font-outfit">Verified Competencies</h3>
-              <p className="text-xs text-slate-400">Academic & professional competencies mapped by your advisor</p>
+              <p className="text-xs text-slate-400">Academic & professional competencies from your program</p>
             </div>
           </div>
 
@@ -297,22 +347,94 @@ export const SkillsCerts = () => {
 
       {/* Certifications Section */}
       <Card className="border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
-            <Award size={24} />
+        <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+              <Award size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-[#146C94] font-outfit">Certifications</h3>
+              <p className="text-xs text-slate-400">Professional industry certifications achieved or planned</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#146C94] font-outfit">Certifications</h3>
-            <p className="text-xs text-slate-400">Professional industry certifications achieved</p>
-          </div>
+          {unenrolledCerts.length > 0 && (
+            <button
+              onClick={() => setShowCertForm(!showCertForm)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all"
+              style={{ background: '#19A7CE' }}
+            >
+              <Plus size={16} /> Add Certification
+              <ChevronDown size={14} className={`transition-transform ${showCertForm ? 'rotate-180' : ''}`} />
+            </button>
+          )}
         </div>
+
+        {/* Add Certification Form */}
+        {showCertForm && (
+          <div className="mb-6 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100 animate-fade-in">
+            <div className="grid sm:grid-cols-3 gap-3 mb-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Certification</label>
+                <select
+                  value={selectedCertId ?? ''}
+                  onChange={(e) => setSelectedCertId(Number(e.target.value))}
+                  className={inputClass}
+                >
+                  <option value="">Select a certification...</option>
+                  {unenrolledCerts.map((cert: any) => (
+                    <option key={cert.id} value={cert.id}>
+                      {cert.name} {cert.provider ? `(${cert.provider})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
+                <select
+                  value={certStatus}
+                  onChange={(e) => setCertStatus(e.target.value)}
+                  className={inputClass}
+                >
+                  {CERT_STATUSES.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Completion Date</label>
+                <input
+                  type="date"
+                  value={certCompletionDate}
+                  onChange={(e) => setCertCompletionDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleEnrollCert}
+              disabled={!selectedCertId || isEnrolling}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ background: '#146C94' }}
+            >
+              {isEnrolling ? (
+                <span className="animate-pulse">Adding certification...</span>
+              ) : (
+                <>
+                  <Award size={16} /> Add to My Profile
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         {!hasCerts ? (
           <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
             <Award className="w-12 h-12 text-slate-300 mb-3" />
             <h4 className="text-sm font-bold text-slate-600">No Certifications Yet</h4>
             <p className="text-xs text-slate-500 mt-1 max-w-sm">
-              You have no certifications linked to your profile yet. Certifications such as AWS, Google, or Cisco credentials will appear here once registered by the administration.
+              {unenrolledCerts.length > 0
+                ? 'Click "Add Certification" above to register your professional certifications (AWS, Google, Cisco, etc.).'
+                : 'No certification templates are available yet. They will appear here once the administration adds them.'}
             </p>
           </div>
         ) : (
@@ -326,11 +448,17 @@ export const SkillsCerts = () => {
                   <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
                     <Award size={16} className="text-emerald-600" />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-700">{cert.name}</p>
-                    {cert.issuer && <p className="text-xs text-slate-500 mt-0.5">{cert.issuer}</p>}
+                    {cert.provider && <p className="text-xs text-slate-500 mt-0.5">{cert.provider}</p>}
                     {cert.status && (
-                      <span className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                      <span className={`inline-block mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        cert.status === 'Completed'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : cert.status === 'In Progress'
+                          ? 'bg-sky-100 text-sky-700'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
                         {cert.status}
                       </span>
                     )}

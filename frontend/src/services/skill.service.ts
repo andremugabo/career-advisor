@@ -21,4 +21,30 @@ export const skillService = {
       method: 'DELETE',
     });
   },
+
+  // ─── Certification Methods ───
+
+  // List all available certification templates
+  listCertifications: async () => {
+    const res = await apiFetch<any>('/certifications/');
+    // Handle both paginated and non-paginated responses
+    return Array.isArray(res) ? res : (res.results || []);
+  },
+
+  // Enroll student in a certification
+  enrollCertification: async (certId: number, certStatus: string, completionDate?: string) => {
+    return apiFetch<any>('/certifications/my/', {
+      method: 'POST',
+      body: JSON.stringify({
+        cert: certId,
+        status: certStatus,
+        completion_date: completionDate || null,
+      }),
+    });
+  },
+
+  // Get student's own certifications
+  getMyCertifications: async () => {
+    return apiFetch<any[]>('/certifications/my/');
+  },
 };
