@@ -33,13 +33,11 @@ export const skillService = {
 
   // Enroll student in a certification
   enrollCertification: async (certId: string, certStatus: string, completionDate?: string) => {
+    const payload: Record<string, any> = { cert_id: certId, status: certStatus };
+    if (completionDate) payload.completion_date = completionDate;
     return apiFetch<any>('/certifications/my/', {
       method: 'POST',
-      body: JSON.stringify({
-        cert_id: certId,
-        status: certStatus,
-        completion_date: completionDate || null,
-      }),
+      body: JSON.stringify(payload),
     });
   },
 
