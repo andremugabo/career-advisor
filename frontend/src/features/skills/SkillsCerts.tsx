@@ -33,7 +33,7 @@ export const SkillsCerts = () => {
   // Certification enrollment state
   const [availableCerts, setAvailableCerts] = useState<any[]>([]);
   const [showCertForm, setShowCertForm] = useState(false);
-  const [selectedCertId, setSelectedCertId] = useState<number | null>(null);
+  const [selectedCertId, setSelectedCertId] = useState<string | null>(null);
   const [certStatus, setCertStatus] = useState('Planning');
   const [certCompletionDate, setCertCompletionDate] = useState('');
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -113,7 +113,7 @@ export const SkillsCerts = () => {
     setIsEnrolling(true);
     try {
       await skillService.enrollCertification(
-        selectedCertId,
+        selectedCertId!,
         certStatus,
         certCompletionDate || undefined
       );
@@ -377,7 +377,7 @@ export const SkillsCerts = () => {
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Certification</label>
                 <select
                   value={selectedCertId ?? ''}
-                  onChange={(e) => setSelectedCertId(Number(e.target.value))}
+                  onChange={(e) => setSelectedCertId(e.target.value || null)}
                   className={inputClass}
                 >
                   <option value="">Select a certification...</option>

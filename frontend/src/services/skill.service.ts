@@ -32,7 +32,7 @@ export const skillService = {
   },
 
   // Enroll student in a certification
-  enrollCertification: async (certId: number, certStatus: string, completionDate?: string) => {
+  enrollCertification: async (certId: string, certStatus: string, completionDate?: string) => {
     return apiFetch<any>('/certifications/my/', {
       method: 'POST',
       body: JSON.stringify({
