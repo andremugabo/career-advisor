@@ -4,10 +4,11 @@ import { studentService } from '../../services';
 import { notify } from '../../lib/toast';
 import { Star, AlertCircle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { FavoriteCareer } from '../../types';
 
 export const FavoriteCareers = () => {
   const navigate = useNavigate();
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteCareer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,10 +27,10 @@ export const FavoriteCareers = () => {
     }
   };
 
-  const removeFavorite = async (careerId: string) => {
+  const removeFavorite = async (favoriteId: number) => {
     try {
-      await studentService.toggleFavoriteCareer(careerId);
-      setFavorites(favorites.filter(f => f.career.id.toString() !== careerId));
+      await studentService.removeFavoriteCareer(favoriteId.toString());
+      setFavorites(favorites.filter(f => f.id !== favoriteId));
       notify.success('Removed from favorites.');
     } catch (error: any) {
       notify.error(error.message || 'Failed to update favorites.');
@@ -66,10 +67,10 @@ export const FavoriteCareers = () => {
         </Card>
       ) : (
         <div className="grid sm:grid-cols-2 gap-6">
-          {favorites.map((fav) => (
+          {(Array.isArray(favorites) ? favorites : []).map((fav) => (
             <Card key={fav.id} className="relative group border-slate-200 shadow-sm hover:border-amber-200 transition-colors">
               <button 
-                onClick={() => removeFavorite(fav.career.id.toString())}
+                onClick={() => removeFavorite(fav.id)}
                 className="absolute top-4 right-4 text-amber-400 hover:text-slate-300 transition-colors z-10"
                 title="Remove from favorites"
               >
@@ -78,14 +79,14 @@ export const FavoriteCareers = () => {
               
               <div className="pr-12">
                 <span className="text-[10px] font-bold text-slate-400 font-mono tracking-wider">O*NET: {fav.career.onet_code}</span>
-                <h3 className="text-xl font-bold font-outfit text-[#146C94] mt-1 mb-3">{fav.career.title}</h3>
+                <h3 className="text-xl font-bold font-outfit text-[#146C94] mt-1 mb-3">{fav.career.name}</h3>
                 
                 <p className="text-sm text-slate-600 line-clamp-3 mb-6">
                   {fav.career.description}
                 </p>
                 
                 <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                  <span className="text-xs text-slate-500">Added: {new Date(fav.created_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-500">Added: {fav.saved_at ? new Date(fav.saved_at).toLocaleDateString() : '—'}</span>
                   <Button variant="secondary" className="py-1 px-3 text-xs h-auto flex items-center gap-1">
                     View Details <ArrowRight size={14}/>
                   </Button>

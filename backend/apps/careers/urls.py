@@ -15,4 +15,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('compare/', CompareCareersView.as_view(), name='compare_careers'),
     path('visualize-path/', CareerPathVisualizationView.as_view(), name='visualize_path'),
+    path('path-visualization/', CareerPathVisualizationView.as_view(), name='path_visualization'),
 ]
