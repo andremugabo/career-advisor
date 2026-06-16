@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, Search, Menu, CheckCircle2, MessageSquare, Briefcase, User, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { studentService } from '../services';
+import { authService } from '../services/auth.service';
 
 interface TopbarProps {
   role: string;
@@ -13,6 +15,24 @@ export const Topbar: React.FC<TopbarProps> = ({ role, onMenuClick }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try {
+        if (role === 'Student') {
+          const profile = await studentService.getProfile();
+          setUserName(profile.full_name || '');
+        } else {
+          const user = await authService.getCurrentUser();
+          setUserName(user.email ? user.email.split('@')[0] : role);
+        }
+      } catch (err) {
+        setUserName(role);
+      }
+    };
+    fetchName();
+  }, [role]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -115,11 +135,13 @@ export const Topbar: React.FC<TopbarProps> = ({ role, onMenuClick }) => {
             className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-[#146C94] group-hover:text-[#19A7CE] transition-colors">Active {role}</p>
+              <p className="text-sm font-bold text-[#146C94] group-hover:text-[#19A7CE] transition-colors">
+                {userName || `Active ${role}`}
+              </p>
               <p className="text-xs text-slate-500">{showProfileMenu ? 'Close Menu' : 'View Profile'}</p>
             </div>
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm transition-colors ${showProfileMenu ? 'bg-[#19A7CE] text-white' : 'bg-[#AFD3E2]/30 text-[#146C94] border border-[#19A7CE]/20 group-hover:bg-[#19A7CE]/10'}`}>
-              {role.charAt(0).toUpperCase()}
+              {userName ? userName.charAt(0).toUpperCase() : role.charAt(0).toUpperCase()}
             </div>
           </div>
 
@@ -131,7 +153,13 @@ export const Topbar: React.FC<TopbarProps> = ({ role, onMenuClick }) => {
                 <p className="text-xs text-slate-500 truncate">Settings & Preferences</p>
               </div>
               <div className="py-1">
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#146C94] transition-colors text-left">
+                <button 
+                  onClick={() => {
+                    navigate('/profile');
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#146C94] transition-colors text-left"
+                >
                   <User className="w-4 h-4" /> My Profile
                 </button>
                 <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#146C94] transition-colors text-left">

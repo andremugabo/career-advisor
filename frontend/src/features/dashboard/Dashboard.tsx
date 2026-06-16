@@ -41,13 +41,13 @@ export default function Dashboard() {
         });
         const mockRecs = [
           {
-            career_id: 1, onet_code: '15-1252.00', title: 'Software Developer', match_percentage: 92,
+            career_id: '1', onet_code: '15-1252.00', title: 'Software Developer', match_percentage: 92,
             missing_skills: ['AWS', 'Docker'], total_missing: 2,
             required_education: 'Bachelor’s Degree', work_experience: 'None', on_the_job_training: 'None',
             recommended_certs: [{ id: '1', name: 'AWS Certified Developer', provider: 'Amazon' }]
           },
           {
-            career_id: 2, onet_code: '15-1254.00', title: 'Web Developer', match_percentage: 85,
+            career_id: '2', onet_code: '15-1254.00', title: 'Web Developer', match_percentage: 85,
             missing_skills: ['TypeScript', 'Node.js'], total_missing: 2,
             required_education: 'Associate’s Degree', work_experience: 'None', on_the_job_training: 'None',
             recommended_certs: []
@@ -113,9 +113,9 @@ export default function Dashboard() {
               Verified Competency Skills ({student?.skills?.length || 0})
             </h4>
             <div className="flex flex-wrap gap-2">
-              {student?.skills?.map((skill: string, idx: number) => (
+              {student?.skills?.map((skill: any, idx: number) => (
                 <span key={idx} className="bg-slate-100 border border-slate-200 text-slate-600 rounded-md px-3 py-1 text-xs font-medium">
-                  {skill}
+                  {typeof skill === 'string' ? skill : skill?.name}
                 </span>
               ))}
             </div>
@@ -212,9 +212,12 @@ export default function Dashboard() {
                       <CheckCircle size={16} /> Your Matches
                     </div>
                     <div className="space-y-2">
-                      {student?.skills?.filter((s: string) => !selectedCareer.missing_skills.some((ms: string) => ms.toLowerCase() === s.toLowerCase())).slice(0, 4).map((skill: string, idx: number) => (
-                        <div key={idx} className="text-sm text-emerald-900 font-medium">✓ {skill}</div>
-                      ))}
+                      {student?.skills?.filter((s: any) => {
+                      const skillStr = typeof s === 'string' ? s : (s?.name ?? '');
+                      return !selectedCareer.missing_skills.some((ms: string) => ms.toLowerCase() === skillStr.toLowerCase());
+                    }).slice(0, 4).map((skill: any, idx: number) => (
+                      <div key={idx} className="text-sm text-emerald-900 font-medium">✓ {typeof skill === 'string' ? skill : skill?.name}</div>
+                    ))}
                     </div>
                   </div>
 

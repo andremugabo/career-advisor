@@ -31,7 +31,7 @@ export { SkillsCerts } from './skills/SkillsCerts';
 export { InternshipBoard } from './internships/InternshipBoard';
 export { RecommendationsPage } from './recommendations/RecommendationsPage';
 export { CareerAssessment } from './careers/CareerAssessment';
-export { CareerVisualization } from './careers/CareerVisualization';
+export { default as CareerVisualization } from './careers/CareerVisualization';
 export { CareerComparison } from './careers/CareerComparison';
 export { FavoriteCareers } from './careers/FavoriteCareers';
 export { ResourceLibrary } from './resources/ResourceLibrary';
@@ -39,3 +39,4 @@ export { ApplicationsTracker } from './applications/ApplicationsTracker';
 
 // 6. Miscellaneous
 export { NotFoundPage } from './misc/NotFoundPage';
+export { StudentMessages } from './misc/StudentMessages';
