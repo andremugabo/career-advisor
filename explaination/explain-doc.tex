@@ -142,7 +142,7 @@ The system follows a \textbf{decoupled client-server architecture}. The React fr
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/architecture.png}
+    \includegraphics[width=\textheight,height=0.8\textwidth,keepaspectratio]{diagrams/architecture.png}
     \caption{High-Level System Architecture}
     \label{fig:architecture}
 \end{sidewaysfigure}
@@ -254,7 +254,7 @@ The system contains \textbf{20 database tables} across 13 domain modules. All re
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/erd.png}
+    \includegraphics[width=\textheight,height=0.8\textwidth,keepaspectratio]{diagrams/erd.png}
     \caption{Complete Entity Relationship Diagram --- 20 Tables Across 13 Domain Modules}
     \label{fig:erd}
 \end{sidewaysfigure}
@@ -297,12 +297,12 @@ The AI engine is the core differentiator of this platform. It uses \textbf{cosin
 
 \subsection{How It Works}
 
-\begin{sidewaysfigure}[p]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/ai_flow.png}
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{diagrams/ai_flow.png}
     \caption{AI Career Recommendation Sequence Flow}
     \label{fig:ai_flow}
-\end{sidewaysfigure}
+\end{figure}
 
 \subsection{Step-by-Step Process}
 
@@ -362,7 +362,7 @@ The system uses a multi-step authentication process combining JWT tokens with em
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth,height=0.65\textheight,keepaspectratio]{diagrams/auth_flow.png}
+    \includegraphics[width=0.75\textwidth,height=0.75\textheight,keepaspectratio]{diagrams/auth_flow.png}
     \caption{Authentication and Registration Flow}
     \label{fig:auth_flow}
 \end{figure}
@@ -392,7 +392,7 @@ RBAC is enforced at two levels:
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/rbac.png}
+    \includegraphics[width=\textheight,height=0.45\textwidth,keepaspectratio]{diagrams/rbac.png}
     \caption{Role-Based Access Control Flow --- Three-Tier Portal Routing}
     \label{fig:rbac}
 \end{sidewaysfigure}
@@ -443,7 +443,7 @@ The frontend follows a \textbf{feature-based architecture} where each page is a 
 
 \begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=0.95\textheight,height=0.85\textwidth,keepaspectratio]{diagrams/frontend.png}
+    \includegraphics[width=\textheight,height=0.5\textwidth,keepaspectratio]{diagrams/frontend.png}
     \caption{Frontend Component Architecture --- 24 Pages, Service Layer, API Client}
     \label{fig:frontend}
 \end{sidewaysfigure}
@@ -532,7 +532,7 @@ exportAuditLogsCsv()    -> GET  /api/audit/export-csv/
 
 \subsection{Authentication Endpoints}
 
-\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\begin{longtable}{p{1.5cm}p{5.5cm}p{6.5cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
@@ -548,7 +548,8 @@ POST & \texttt{/api/auth/reset-password/} & Reset password with OTP \\
 
 \subsection{Student Endpoints}
 
-\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
+{\small
+\begin{longtable}{p{1.3cm}p{5.5cm}p{6.5cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
@@ -556,9 +557,12 @@ POST & \texttt{/api/auth/reset-password/} & Reset password with OTP \\
 GET & \texttt{/api/profiles/me/} & Get current student profile \\
 PATCH & \texttt{/api/profiles/me/} & Update profile fields \\
 POST & \texttt{/api/profiles/upload-transcript/} & Upload PDF transcript \\
+POST & \texttt{/api/profiles/share-report/} & Share AI report with advisor \\
+GET & \texttt{/api/profiles/my-interventions/} & View advisor notes \& approvals \\
+GET & \texttt{/api/profiles/list-advisors/} & List available advisors \\
 GET & \texttt{/api/skills/} & List all skills (searchable) \\
 GET/POST & \texttt{/api/skills/my/} & Student's skills CRUD \\
-GET & \texttt{/api/certifications/my/} & Student's certifications \\
+GET/POST & \texttt{/api/certifications/my/} & Student's certifications \\
 GET & \texttt{/api/recommendations/} & AI career recommendations \\
 POST & \texttt{/api/careers/assessments/} & Submit career assessment \\
 GET/POST & \texttt{/api/careers/favorites/} & Toggle favorite careers \\
@@ -566,35 +570,40 @@ GET & \texttt{/api/internships/} & Browse internships \\
 POST & \texttt{/api/applications/} & Submit application \\
 GET & \texttt{/api/applications/} & List applications \\
 GET & \texttt{/api/resources/} & Browse resources \\
-GET & \texttt{/api/notifications/student-msgs/} & View advisor messages \\
+GET & \texttt{/api/notifications/} & View advisor messages \\
 \bottomrule
 \end{longtable}
+}
 
 \subsection{Advisor Endpoints}
 
-\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
+{\small
+\begin{longtable}{p{1.3cm}p{5.5cm}p{6.5cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
 \endhead
 GET & \texttt{/api/advisors/students/} & List all student profiles \\
+GET & \texttt{/api/advisors/students/analytics/} & System-wide analytics \\
 POST & \texttt{/api/advisors/interventions/} & Log an intervention \\
 GET & \texttt{/api/advisors/interventions/} & Intervention history \\
-POST & \texttt{/api/notifications/advisor-msgs/} & Send message to student \\
+POST & \texttt{/api/notifications/} & Send message to student \\
 \bottomrule
 \end{longtable}
+}
 
 \subsection{Admin Endpoints}
 
-\begin{longtable}{p{1.5cm}p{6.5cm}p{6cm}}
+{\small
+\begin{longtable}{p{1.3cm}p{5.5cm}p{6.5cm}}
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
 \endhead
 GET & \texttt{/api/admin/users/} & List all users \\
 POST & \texttt{/api/admin/users/} & Create user \\
-PATCH & \texttt{/api/admin/users/<id>/} & Update user \\
-DELETE & \texttt{/api/admin/users/<id>/} & Delete user \\
+PATCH & \texttt{/api/admin/users/\textless id\textgreater/} & Update user \\
+DELETE & \texttt{/api/admin/users/\textless id\textgreater/} & Delete user \\
 GET & \texttt{/api/analytics/overview/} & System overview stats \\
 GET & \texttt{/api/analytics/permission-matrix/} & RBAC permission matrix \\
 GET & \texttt{/api/analytics/encryption-status/} & Security config status \\
@@ -605,6 +614,7 @@ GET/POST & \texttt{/api/internships/} & Internship management \\
 GET & \texttt{/api/applications/} & All student applications \\
 \bottomrule
 \end{longtable}
+}
 
 \newpage
 
@@ -636,6 +646,7 @@ GET & \texttt{/api/applications/} & All student applications \\
 \texttt{/applications} & Student & ApplicationsTracker \\
 \texttt{/resources} & Student & ResourceLibrary \\
 \texttt{/messages} & Student & StudentMessages \\
+\texttt{/advisor-notes} & Student & StudentInterventions \\
 \midrule
 \texttt{/advisor/home} & Advisor & AdvisorHome \\
 \texttt{/students} & Advisor & AdvisorDashboard \\
