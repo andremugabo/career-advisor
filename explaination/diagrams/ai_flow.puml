@@ -1,0 +1,66 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam sequenceArrowColor #146C94
+skinparam sequenceLifeLineBorderColor #19A7CE
+
+title AI Career Recommendation Flow
+
+actor Student as S
+participant "React Frontend" as FE
+participant "API Client\n(JWT Auth)" as API
+participant "Careers ViewSet" as CV
+participant "CareerRecommender" as CR
+participant "Vectorizer" as VEC
+participant "Cosine Similarity\nEngine" as COS
+database "PostgreSQL" as DB
+
+S -> FE : Take Career Assessment
+activate FE
+
+FE -> API : POST /api/careers/assessments/
+activate API
+API -> CV : Submit assessment responses
+activate CV
+CV -> DB : Save CareerAssessment\n+ AssessmentResponses
+CV --> API : 201 Created
+deactivate CV
+API --> FE : Assessment saved
+deactivate API
+
+S -> FE : View AI Recommendations
+FE -> API : GET /api/recommendations/
+activate API
+API -> CR : getRecommendations(student_id)
+activate CR
+
+CR -> DB : Fetch Student profile,\nskills, program_skills
+CR -> VEC : buildStudentVector(student)
+activate VEC
+VEC -> VEC : Combine technical skills\n+ soft skills\n+ program skills
+VEC --> CR : student_vector[n]
+deactivate VEC
+
+CR -> DB : Fetch all 904\nCareerClusters with skills
+CR -> COS : calculateSimilarity(\nstudent_vector,\ncluster_vectors)
+activate COS
+COS -> COS : dot(A, B) /\n(||A|| * ||B||)
+COS --> CR : similarity_scores[904]
+deactivate COS
+
+CR -> CR : Sort by score DESC\nFilter top matches
+CR -> CR : Compute skill_gaps\nfor each match
+
+CR -> DB : Save MatchResult\nrecords
+CR --> API : Top career matches\nwith scores + gaps
+deactivate CR
+API --> FE : JSON response
+deactivate API
+
+FE -> FE : Render recommendation\ncards with match %,\nskill gaps, certs
+
+FE --> S : Display AI\nRecommendations
+
+@enduml

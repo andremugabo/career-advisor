@@ -1,0 +1,132 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam packageBorderColor #146C94
+
+title Frontend Component Architecture
+
+package "AppRoutes.tsx" as ROUTES #F8FAFC {
+}
+
+package "Layouts (RBAC Guards)" #E8F4F8 {
+  [AuthLayout] as AUTH_L
+  [StudentLayout] as STU_L
+  [AdvisorLayout] as ADV_L
+  [AdminLayout] as ADM_L
+}
+
+package "Shared Components" #FFF7ED {
+  [Sidebar] as SB
+  [Topbar] as TB
+  [Button] as BTN
+  [Card] as CRD
+  [Pagination] as PG
+  [ErrorBoundary] as EB
+}
+
+package "Student Features (12)" #E8F4F8 {
+  [Dashboard] as DASH
+  [StudentProfile] as PROF
+  [SkillsCerts] as SKIL
+  [CareerAssessment] as ASSESS
+  [RecommendationsPage] as RECS
+  [CareerVisualization] as CVIS
+  [CareerComparison] as CCOMP
+  [FavoriteCareers] as FAV
+  [InternshipBoard] as IBOARD
+  [ApplicationsTracker] as ATRACK
+  [ResourceLibrary] as RLIB
+  [StudentMessages] as SMSG
+}
+
+package "Advisor Features (5)" #EDE9FE {
+  [AdvisorHome] as AHOME
+  [AdvisorDashboard] as ADASH
+  [AdvisorNotifications] as ANOTIF
+  [InterventionsHistory] as IHIST
+  [AdvisorResourceLibrary] as ARLIB
+}
+
+package "Admin Features (6)" #ECFDF5 {
+  [AdminDashboard] as ADDASH
+  [AdminUsers] as AUSR
+  [AdminAnalytics] as AANAL
+  [AdminInternships] as AINTERN
+  [AdminContent] as ACONT
+  [AdminSettings] as ASET
+}
+
+package "Service Layer" #FEF3C7 {
+  [student.service.ts] as SSERV
+  [advisor.service.ts] as ASERV
+  [admin.service.ts] as ADSERV
+  [skill.service.ts] as SKSERV
+  [api/client.ts\n(Axios + JWT)] as CLIENT
+}
+
+ROUTES --> AUTH_L
+ROUTES --> STU_L
+ROUTES --> ADV_L
+ROUTES --> ADM_L
+
+STU_L --> SB
+STU_L --> TB
+ADV_L --> SB
+ADV_L --> TB
+ADM_L --> SB
+ADM_L --> TB
+
+STU_L --> DASH
+STU_L --> PROF
+STU_L --> SKIL
+STU_L --> ASSESS
+STU_L --> RECS
+STU_L --> CVIS
+STU_L --> CCOMP
+STU_L --> FAV
+STU_L --> IBOARD
+STU_L --> ATRACK
+STU_L --> RLIB
+STU_L --> SMSG
+
+ADV_L --> AHOME
+ADV_L --> ADASH
+ADV_L --> ANOTIF
+ADV_L --> IHIST
+ADV_L --> ARLIB
+
+ADM_L --> ADDASH
+ADM_L --> AUSR
+ADM_L --> AANAL
+ADM_L --> AINTERN
+ADM_L --> ACONT
+ADM_L --> ASET
+
+DASH --> SSERV
+PROF --> SSERV
+SKIL --> SKSERV
+ATRACK --> SSERV
+RLIB --> SSERV
+FAV --> SSERV
+
+AHOME --> ASERV
+ADASH --> ASERV
+ANOTIF --> ASERV
+
+ADDASH --> ADSERV
+AUSR --> ADSERV
+AANAL --> ADSERV
+AINTERN --> ADSERV
+ACONT --> ADSERV
+ASET --> ADSERV
+
+SSERV --> CLIENT
+ASERV --> CLIENT
+ADSERV --> CLIENT
+SKSERV --> CLIENT
+
+CLIENT --> [Backend API\nhttp://localhost:8000]
+
+@enduml

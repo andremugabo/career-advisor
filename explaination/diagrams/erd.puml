@@ -1,0 +1,263 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam classBorderColor #146C94
+skinparam classBackgroundColor #F8FAFC
+
+title AI Career Path Advisor - Entity Relationship Diagram
+
+hide circle
+
+package "users" #E8F4F8 {
+  class User {
+    **id** : UUID <<PK>>
+    --
+    email : varchar(255) <<unique>>
+    full_name : varchar(255)
+    role : enum(Student, Advisor, Admin)
+    is_active : boolean
+    is_staff : boolean
+    is_verified : boolean
+    otp_code : varchar(6)
+    otp_created_at : datetime
+    --
+    created_at : datetime
+    updated_at : datetime
+    created_from_ip : inet
+  }
+}
+
+package "profiles" #FFF7ED {
+  class Student {
+    **id** : UUID <<PK>>
+    --
+    user : FK(User) <<1:1>>
+    program : FK(AcademicPrograms)
+    full_name : varchar(255)
+    gpa : decimal(3,2)
+    academic_year : integer
+    bio : text
+    career_goals : text
+    courses_completed : text
+    extracurricular_activities : text
+    transcript_file : FileField
+  }
+  
+  class AcademicPrograms {
+    **id** : UUID <<PK>>
+    --
+    name : varchar(255)
+    program_skills : M2M(Skill)
+  }
+  
+  class WorkExperience {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    company_name : varchar
+    position : varchar
+    start_date : date
+    end_date : date
+  }
+}
+
+package "skills" #F0FDF4 {
+  class Skill {
+    **id** : UUID <<PK>>
+    --
+    name : varchar(255)
+    category : enum(Technical, Soft)
+  }
+  
+  class StudentSkill {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    skill : FK(Skill)
+    proficiency_level : int(1-5)
+    --
+    <<unique_together: student, skill>>
+  }
+  
+  class Certification {
+    **id** : UUID <<PK>>
+    --
+    name : varchar(255)
+    provider : varchar(255)
+    target_cluster : FK(CareerCluster)
+    skills : M2M(Skill)
+  }
+  
+  class StudentCertification {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    cert : FK(Certification)
+    status : enum(Planning, Completed)
+    completion_date : date
+    document : FileField
+    --
+    <<unique_together: student, cert>>
+  }
+}
+
+package "careers" #FEF3C7 {
+  class CareerCluster {
+    **id** : UUID <<PK>>
+    --
+    onet_code : varchar(20) <<unique>>
+    title : varchar(255)
+    description : text
+    education_level : varchar
+    experience_level : varchar
+    training_level : varchar
+    skills : M2M(Skill)
+  }
+  
+  class CareerAssessment {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    assessment_type : varchar
+  }
+  
+  class AssessmentResponse {
+    **id** : UUID <<PK>>
+    --
+    assessment : FK(CareerAssessment)
+    question_id : varchar
+    answer : varchar
+  }
+  
+  class FavoriteCareer {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    career : FK(CareerCluster)
+    --
+    <<unique_together: student, career>>
+  }
+}
+
+package "recommendations" #FDF2F8 {
+  class MatchResult {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    career_cluster : FK(CareerCluster)
+    similarity_score : float
+    missing_skills : JSON
+  }
+}
+
+package "internships" #EDE9FE {
+  class Internship {
+    **id** : UUID <<PK>>
+    --
+    title : varchar(255)
+    company : varchar(255)
+    location : varchar(255)
+    description : text
+    url : URLField
+    type : varchar
+    cluster : FK(CareerCluster)
+  }
+}
+
+package "applications" #FEE2E2 {
+  class Application {
+    **id** : UUID <<PK>>
+    --
+    student : FK(Student)
+    internship : FK(Internship)
+    status : enum(Pending, Shortlisted, Rejected)
+  }
+}
+
+package "advisors" #E0E7FF {
+  class Advisor {
+    **id** : UUID <<PK>>
+    --
+    user : FK(User) <<1:1>>
+  }
+  
+  class StudentIntervention {
+    **id** : UUID <<PK>>
+    --
+    advisor : FK(Advisor)
+    student : FK(Student)
+    intervention_type : enum(8 types)
+    notes : text
+  }
+}
+
+package "notifications" #ECFDF5 {
+  class AdvisorMessage {
+    **id** : UUID <<PK>>
+    --
+    sender : FK(User)
+    recipient : FK(Student)
+    subject : varchar(255)
+    body : text
+    is_read : boolean
+    read_at : datetime
+    approved : boolean
+  }
+}
+
+package "audit" #FFF1F2 {
+  class AuditLog {
+    **id** : UUID <<PK>>
+    --
+    user : FK(User)
+    action : varchar
+    model_name : varchar
+    object_id : UUID
+    field_name : varchar
+    old_value : text
+    new_value : text
+    ip_address : inet
+  }
+}
+
+package "resources" #F5F3FF {
+  class Resource {
+    **id** : UUID <<PK>>
+    --
+    title : varchar(255)
+    file_path : varchar(255)
+    category : varchar(255)
+  }
+}
+
+' Relationships
+User "1" -- "0..1" Student
+User "1" -- "0..1" Advisor
+Student "1" -- "*" StudentSkill
+Skill "1" -- "*" StudentSkill
+Student "1" -- "*" StudentCertification
+Certification "1" -- "*" StudentCertification
+Student "*" -- "1" AcademicPrograms
+AcademicPrograms "*" -- "*" Skill : program_skills
+Student "1" -- "*" Application
+Internship "1" -- "*" Application
+Student "1" -- "*" FavoriteCareer
+CareerCluster "1" -- "*" FavoriteCareer
+Student "1" -- "*" MatchResult
+CareerCluster "1" -- "*" MatchResult
+CareerCluster "1" -- "*" Internship
+Certification "*" -- "1" CareerCluster : target_cluster
+Certification "*" -- "*" Skill
+CareerCluster "*" -- "*" Skill
+Student "1" -- "*" CareerAssessment
+CareerAssessment "1" -- "*" AssessmentResponse
+Advisor "1" -- "*" StudentIntervention
+Student "1" -- "*" StudentIntervention
+User "1" -- "*" AdvisorMessage : sender
+Student "1" -- "*" AdvisorMessage : recipient
+User "1" -- "*" AuditLog
+Student "1" -- "*" WorkExperience
+
+@enduml

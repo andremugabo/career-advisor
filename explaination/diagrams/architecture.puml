@@ -1,0 +1,101 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam packageBorderColor #146C94
+
+title AI Career Path Advisor - System Architecture
+
+actor "Student" as student #19A7CE
+actor "Advisor" as advisor #7c3aed
+actor "Admin" as admin #059669
+
+package "Frontend (React + Vite + TypeScript)" as FE #E8F4F8 {
+  [StudentLayout\n12 Pages] as SL
+  [AdvisorLayout\n5 Pages] as AL
+  [AdminLayout\n6 Pages] as ADL
+  [API Client\n(Axios + JWT)] as API
+}
+
+package "Backend (Django REST Framework)" as BE #FFF7ED {
+  package "Authentication" {
+    [JWT Token\nProvider] as JWT
+    [OTP Email\nVerification] as OTP
+    [RBAC\nPermissions] as RBAC
+  }
+  
+  package "Core API Endpoints" {
+    [Profiles API] as PROF
+    [Skills API] as SKILL
+    [Careers API] as CAREER
+    [Internships API] as INTERN
+    [Applications API] as APP
+    [Advisors API] as ADV
+    [Notifications API] as NOTIF
+    [Resources API] as RES
+  }
+  
+  package "AI Engine" {
+    [Vectorizer] as VEC
+    [Cosine\nSimilarity] as COS
+    [Career\nRecommender] as REC
+  }
+  
+  package "Admin APIs" {
+    [Analytics API] as ANAL
+    [Audit Log API] as AUDIT
+    [User Mgmt API] as UMGMT
+  }
+}
+
+database "PostgreSQL" as DB #F0FDF4 {
+  [20 Tables\n(UUID PKs)]
+}
+
+cloud "O*NET Dataset\n904 Career Clusters" as ONET #FEF3C7
+
+student --> SL
+advisor --> AL
+admin --> ADL
+
+SL --> API
+AL --> API
+ADL --> API
+
+API --> JWT : Auth Token
+JWT --> RBAC
+
+RBAC --> PROF
+RBAC --> SKILL
+RBAC --> CAREER
+RBAC --> INTERN
+RBAC --> APP
+RBAC --> ADV
+RBAC --> NOTIF
+RBAC --> RES
+RBAC --> ANAL
+RBAC --> AUDIT
+RBAC --> UMGMT
+
+CAREER --> VEC
+VEC --> COS
+COS --> REC
+
+PROF --> DB
+SKILL --> DB
+CAREER --> DB
+INTERN --> DB
+APP --> DB
+ADV --> DB
+NOTIF --> DB
+RES --> DB
+ANAL --> DB
+AUDIT --> DB
+
+ONET ..> DB : Seeded Data
+
+OTP --> student : Email OTP
+
+@enduml

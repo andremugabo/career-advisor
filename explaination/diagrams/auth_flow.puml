@@ -1,0 +1,56 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam sequenceArrowColor #146C94
+
+title Authentication & Registration Flow
+
+actor Student as S
+participant "React\nRegister Page" as REG
+participant "React\nLogin Page" as LOG
+participant "API Client" as API
+participant "Auth Views" as AUTH
+participant "Email\nService" as EMAIL
+database "PostgreSQL" as DB
+
+== Registration ==
+
+S -> REG : Fill form\n(name, email, password, role)
+REG -> API : POST /api/auth/register/
+API -> AUTH : CreateUser
+AUTH -> DB : Insert User\n(is_verified=False)
+AUTH -> AUTH : Generate 6-digit OTP
+AUTH -> DB : Save OTP + timestamp
+AUTH -> EMAIL : Send verification email\n(Gmail SMTP)
+EMAIL --> S : OTP code via email
+AUTH --> API : 201 (Check your email)
+API --> REG : Show verify page
+
+S -> REG : Enter OTP code
+REG -> API : POST /api/auth/verify-email/
+API -> AUTH : VerifyOTP
+AUTH -> DB : Check OTP matches\n& not expired (10 min)
+AUTH -> DB : Set is_verified=True
+AUTH --> API : 200 (Email verified)
+API --> REG : Redirect to login
+
+== Login ==
+
+S -> LOG : Enter email + password
+LOG -> API : POST /api/token/
+API -> AUTH : TokenObtainPair
+AUTH -> DB : Validate credentials\n+ check is_verified
+AUTH --> API : {access_token, refresh_token}
+API -> API : Store tokens\nin localStorage
+API --> LOG : Redirect to dashboard
+
+== Token Refresh ==
+
+API -> API : Access token expired?
+API -> AUTH : POST /api/token/refresh/\n(refresh_token)
+AUTH --> API : New access_token
+note right : Automatic silent refresh\nbefore token expires
+
+@enduml

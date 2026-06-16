@@ -1,0 +1,81 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam actorBorderColor #146C94
+
+title Role-Based Access Control (RBAC) Flow
+
+actor "User" as U
+
+U -> (Login Page) : Enter credentials
+
+(Login Page) -> (JWT Auth) : POST /api/token/
+
+(JWT Auth) -> (Token Issued) : Access + Refresh tokens
+
+note right of (Token Issued)
+  JWT payload contains:
+  - user_id (UUID)
+  - email
+  - role (Student|Advisor|Admin)
+  - exp (expiration)
+end note
+
+(Token Issued) --> (Frontend Router)
+
+(Frontend Router) -> (StudentLayout) : role == "Student"
+(Frontend Router) -> (AdvisorLayout) : role == "Advisor"
+(Frontend Router) -> (AdminLayout) : role == "Admin"
+
+package "Student Routes (12 pages)" #E8F4F8 {
+  (StudentLayout) --> (Dashboard)
+  (StudentLayout) --> (Profile)
+  (StudentLayout) --> (Skills & Certs)
+  (StudentLayout) --> (Assessment)
+  (StudentLayout) --> (Recommendations)
+  (StudentLayout) --> (Career Path)
+  (StudentLayout) --> (Compare)
+  (StudentLayout) --> (Favorites)
+  (StudentLayout) --> (Internships)
+  (StudentLayout) --> (Applications)
+  (StudentLayout) --> (Resources)
+  (StudentLayout) --> (Messages)
+}
+
+package "Advisor Routes (5 pages)" #EDE9FE {
+  (AdvisorLayout) --> (Advisor Home)
+  (AdvisorLayout) --> (Students List)
+  (AdvisorLayout) --> (Advisor Messages)
+  (AdvisorLayout) --> (Interventions)
+  (AdvisorLayout) --> (Advisor Resources)
+}
+
+package "Admin Routes (6 pages)" #ECFDF5 {
+  (AdminLayout) --> (Admin Dashboard)
+  (AdminLayout) --> (User Management)
+  (AdminLayout) --> (Analytics & RBAC)
+  (AdminLayout) --> (Jobs & Apps)
+  (AdminLayout) --> (Global Content)
+  (AdminLayout) --> (Settings)
+}
+
+note bottom of (StudentLayout)
+  If non-Student tries to access:
+  Redirects to /login or /advisor/home
+end note
+
+note bottom of (AdvisorLayout)
+  Backend enforces via:
+  IsAdvisorOrAdmin permission class
+  Returns 403 Forbidden
+end note
+
+note bottom of (AdminLayout)
+  Backend enforces via:
+  IsSuperAdmin permission class
+  Returns 403 Forbidden
+end note
+
+@enduml

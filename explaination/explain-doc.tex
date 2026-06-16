@@ -1,0 +1,780 @@
+\documentclass[12pt, a4paper]{article}
+
+% ──────────────────────────────────────────────────────────────
+% PACKAGES
+% ──────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{parskip}
+
+% ──────────────────────────────────────────────────────────────
+% STYLING
+% ──────────────────────────────────────────────────────────────
+\definecolor{primary}{HTML}{146C94}
+\definecolor{accent}{HTML}{19A7CE}
+\definecolor{codebg}{HTML}{F8FAFC}
+\definecolor{codeframe}{HTML}{E2E8F0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=accent,
+    citecolor=primary
+}
+
+\titleformat{\section}{\Large\bfseries\color{primary}}{}{0em}{}
+\titleformat{\subsection}{\large\bfseries\color{primary!80!black}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{primary!60!black}}{}{0em}{}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    tabsize=2,
+    showstringspaces=false,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{accent}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{primary}{\textbf{AI Career Path Advisor}}}
+\fancyhead[R]{\textcolor{gray}{Codebase Documentation}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% ──────────────────────────────────────────────────────────────
+% DOCUMENT
+% ──────────────────────────────────────────────────────────────
+\begin{document}
+
+% ──────────────────────────────────────────────────────────────
+% TITLE PAGE
+% ──────────────────────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+
+{\Huge\bfseries\color{primary} AI Career Path Advisor\\[0.3cm]}
+{\LARGE\color{accent} Complete Codebase Documentation\\[0.5cm]}
+
+\vspace{1cm}
+{\large\color{gray} Emmerence Thesis Project\\[0.3cm]}
+{\large AUCA --- Adventist University of Central Africa\\[0.5cm]}
+
+\vspace{2cm}
+
+\begin{tabular}{ll}
+\textbf{Project Type:} & Full-Stack Web Application \\
+\textbf{Backend:} & Python / Django REST Framework \\
+\textbf{Frontend:} & React / Vite / TypeScript \\
+\textbf{Database:} & PostgreSQL \\
+\textbf{AI Engine:} & Cosine Similarity Vectorization \\
+\textbf{Authentication:} & JWT + OTP Email Verification \\
+\textbf{Repository:} & \url{https://github.com/andremugabo/career-advisor} \\
+\end{tabular}
+
+\vfill
+{\large \today}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Project Overview}
+% ══════════════════════════════════════════════════════════════
+
+The \textbf{AI Career Path Advisor} is an enterprise-grade, full-stack web application designed for the Emmerence Thesis Project at AUCA. The system connects student academic profiles and skill sets to industry career clusters using an AI-driven cosine similarity matching engine.
+
+\subsection{Problem Statement}
+
+Students at AUCA lack a systematic, data-driven tool to help them:
+\begin{itemize}
+    \item Identify which career paths align with their academic skills and interests
+    \item Understand skill gaps between their current competencies and career requirements
+    \item Discover internship opportunities matched to their profile
+    \item Receive personalized career guidance from advisors
+\end{itemize}
+
+\subsection{Solution}
+
+The platform provides an integrated solution with three user portals:
+\begin{enumerate}
+    \item \textbf{Student Portal} (12 pages): AI-powered career assessment, skill tracking, internship matching, and advisor messaging.
+    \item \textbf{Advisor Portal} (5 pages): Student monitoring, intervention tracking, and direct messaging to students.
+    \item \textbf{Admin Portal} (6 pages): User management, system analytics, RBAC permission editing, and platform settings.
+\end{enumerate}
+
+\subsection{System Architecture}
+
+The system follows a \textbf{decoupled client-server architecture}. The React frontend communicates with the Django backend exclusively through RESTful API endpoints, authenticated via JWT tokens.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/architecture.png}
+    \caption{High-Level System Architecture}
+    \label{fig:architecture}
+\end{figure}
+
+\textbf{Key architectural decisions:}
+\begin{itemize}
+    \item \textbf{Monorepo structure}: Both \texttt{backend/} and \texttt{frontend/} live in a single repository for simplified deployment.
+    \item \textbf{UUID primary keys}: Every model uses \texttt{UUIDField} as the primary key (via \texttt{AbstractBaseEntity}) to prevent enumeration attacks and support distributed systems.
+    \item \textbf{Audit trail}: Every model extends \texttt{AbstractAuditEntity}, automatically tracking \texttt{created\_at}, \texttt{updated\_at}, \texttt{created\_by}, \texttt{updated\_by}, \texttt{created\_from\_ip}, and \texttt{modified\_from\_ip}.
+    \item \textbf{Role-Based Access Control (RBAC)}: Enforced at both the frontend (layout guards) and backend (DRF permission classes) levels.
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Technology Stack}
+% ══════════════════════════════════════════════════════════════
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Layer} & \textbf{Technologies} \\
+\midrule
+\endhead
+Backend Framework & Python 3.13, Django 6.x, Django REST Framework (DRF) \\
+Database & PostgreSQL with UUID primary keys \\
+Authentication & JWT via \texttt{rest\_framework\_simplejwt} with automatic token rotation \\
+Email & Gmail SMTP for OTP verification and welcome emails \\
+AI/ML & Custom cosine similarity engine (NumPy-free, pure Python) \\
+API Documentation & OpenAPI 3.0 via \texttt{drf-spectacular}, Swagger UI \\
+Frontend Framework & React 18+ with Vite build tool \\
+Language & TypeScript (strict mode) \\
+Styling & TailwindCSS utility classes \\
+Routing & React Router v6 with RBAC layout guards \\
+HTTP Client & Axios with JWT interceptor \\
+Charts & Recharts for data visualization \\
+Icons & Lucide React \\
+Notifications & react-hot-toast \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════════════════════
+\section{Backend Architecture}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Directory Structure}
+
+\begin{lstlisting}[language=bash]
+backend/
+  ai/                          # AI recommendation engine
+    recommenders/
+      career_recommender.py    # Main recommendation orchestrator
+    similarity/
+      vectorizer.py            # Skill-to-vector transformation
+      cosine.py                # Cosine similarity calculation
+  apps/                        # 13 Django domain modules
+    advisors/                  # Advisor model + StudentIntervention
+    analytics/                 # SystemOverview, PermissionMatrix, Encryption
+    applications/              # Student application tracking
+    audit/                     # IP-based audit logging
+    authentication/            # Registration, OTP email, password reset
+    careers/                   # O*NET clusters, assessments, favorites
+    internships/               # Job postings with AI match scoring
+    notifications/             # AdvisorMessage (student-advisor messaging)
+    profiles/                  # Student, AcademicPrograms models
+    recommendations/           # AI match result storage and views
+    resources/                 # Career resource library
+    skills/                    # Skills dictionary, certs, StudentSkill
+    users/                     # User model with role-based access
+  config/                      # Django settings, URL routing, CORS, JWT
+  core/                        # Abstract base models, pagination, exceptions
+    models/
+      base.py                  # AbstractBaseEntity (UUID PK)
+      audit.py                 # AbstractAuditEntity (timestamps + IP)
+  venv/                        # Python virtual environment
+\end{lstlisting}
+
+\subsection{Base Model Hierarchy}
+
+Every model in the system inherits from a two-level abstract hierarchy:
+
+\begin{lstlisting}[language=Python, caption={AbstractBaseEntity --- UUID Primary Key}]
+# core/models/base.py
+import uuid
+from django.db import models
+
+class AbstractBaseEntity(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    class Meta:
+        abstract = True
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={AbstractAuditEntity --- Audit Fields}]
+# core/models/audit.py
+class AbstractAuditEntity(AbstractBaseEntity):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=255, null=True)
+    updated_by = models.CharField(max_length=255, null=True)
+    created_from_ip = models.GenericIPAddressField(null=True)
+    modified_from_ip = models.GenericIPAddressField(null=True)
+    class Meta:
+        abstract = True
+\end{lstlisting}
+
+This ensures every record in the database has:
+\begin{itemize}
+    \item A globally unique, non-sequential UUID identifier
+    \item Automatic creation and modification timestamps
+    \item Traceability of which user and IP address created or modified the record
+\end{itemize}
+
+\subsection{Database Schema (Entity Relationship Diagram)}
+
+The system contains \textbf{20 database tables} across 13 domain modules. All relationships use UUIDs as foreign keys.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/erd.png}
+    \caption{Complete Entity Relationship Diagram}
+    \label{fig:erd}
+\end{figure}
+
+\subsubsection{Key Models Explained}
+
+\begin{longtable}{p{4cm}p{3cm}p{7cm}}
+\toprule
+\textbf{Model} & \textbf{Module} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{User} & users & Core user with email, role (Student/Advisor/Admin), OTP verification \\
+\texttt{Student} & profiles & Academic profile linked 1:1 to User. Contains GPA, bio, career goals, transcript \\
+\texttt{AcademicPrograms} & profiles & University programs with M2M link to Skill (program\_skills) \\
+\texttt{Skill} & skills & Master dictionary of 533+ technical and soft skills \\
+\texttt{StudentSkill} & skills & Junction table: student $\leftrightarrow$ skill with proficiency level (1--5) \\
+\texttt{Certification} & skills & Professional certifications (AWS, Google, etc.) linked to CareerClusters \\
+\texttt{StudentCertification} & skills & Student's certification enrollment: Planning or Completed, with document upload \\
+\texttt{CareerCluster} & careers & 904 O*NET career occupations with skills, education/experience requirements \\
+\texttt{CareerAssessment} & careers & Student's RIASEC assessment session \\
+\texttt{FavoriteCareer} & careers & Bookmarked career clusters per student \\
+\texttt{MatchResult} & recommendations & AI similarity scores + missing skill gaps per student-career pair \\
+\texttt{Internship} & internships & Job postings linked to CareerClusters for AI matching \\
+\texttt{Application} & applications & Student application to an internship with status pipeline \\
+\texttt{Advisor} & advisors & Advisor profile linked 1:1 to User \\
+\texttt{StudentIntervention} & advisors & Academic/career intervention logged by an advisor for a student \\
+\texttt{AdvisorMessage} & notifications & Direct messages from advisor to student \\
+\texttt{AuditLog} & audit & Change tracking: field name, old value, new value, IP address \\
+\texttt{Resource} & resources & Career development resources (guides, articles, templates) \\
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{AI Recommendation Engine}
+% ══════════════════════════════════════════════════════════════
+
+The AI engine is the core differentiator of this platform. It uses \textbf{cosine similarity} to calculate how closely a student's skill profile matches each of the 904 O*NET career clusters.
+
+\subsection{How It Works}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/ai_flow.png}
+    \caption{AI Career Recommendation Sequence Flow}
+    \label{fig:ai_flow}
+\end{figure}
+
+\subsection{Step-by-Step Process}
+
+\begin{enumerate}
+    \item \textbf{Skill Collection}: The system gathers the student's skills from three sources:
+    \begin{itemize}
+        \item \texttt{StudentSkill} records (manually added by the student)
+        \item \texttt{AcademicPrograms.program\_skills} (automatically from the student's enrolled program)
+        \item Assessment responses from the RIASEC questionnaire
+    \end{itemize}
+    
+    \item \textbf{Vectorization}: The \texttt{Vectorizer} class creates a binary skill vector for the student. If the global skill dictionary has $n$ skills, the student vector is an $n$-dimensional binary vector where $v_i = 1$ if the student has skill $i$, and $v_i = 0$ otherwise.
+    
+    \item \textbf{Career Vectorization}: Each of the 904 \texttt{CareerCluster} records has its own M2M relationship with the \texttt{Skill} model. These are also vectorized into $n$-dimensional binary vectors.
+    
+    \item \textbf{Cosine Similarity Calculation}: For each career cluster, the engine computes:
+    
+    \[
+    \text{similarity}(S, C) = \frac{S \cdot C}{\|S\| \times \|C\|}
+    \]
+    
+    Where $S$ is the student vector and $C$ is the career cluster vector. The result is a value between 0 (no match) and 1 (perfect match).
+    
+    \item \textbf{Skill Gap Analysis}: For each recommended career, the engine identifies which skills the career requires that the student does not yet possess:
+    
+    \[
+    \text{missing\_skills} = \{s \in C \mid s \notin S\}
+    \]
+    
+    \item \textbf{Ranking}: Results are sorted by similarity score in descending order. The top matches are saved as \texttt{MatchResult} records and returned to the frontend.
+\end{enumerate}
+
+\subsection{Key Implementation Files}
+
+\begin{longtable}{p{6cm}p{8cm}}
+\toprule
+\textbf{File} & \textbf{Responsibility} \\
+\midrule
+\texttt{ai/similarity/vectorizer.py} & Builds binary skill vectors from student profiles and career clusters \\
+\texttt{ai/similarity/cosine.py} & Computes cosine similarity between two vectors \\
+\texttt{ai/recommenders/career\_recommender.py} & Orchestrates the full pipeline: collect skills $\rightarrow$ vectorize $\rightarrow$ compute similarity $\rightarrow$ rank $\rightarrow$ return \\
+\texttt{apps/recommendations/views.py} & DRF API endpoint that triggers the recommendation engine \\
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Authentication \& Security}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Authentication Flow}
+
+The system uses a multi-step authentication process combining JWT tokens with email OTP verification.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/auth_flow.png}
+    \caption{Authentication and Registration Flow}
+    \label{fig:auth_flow}
+\end{figure}
+
+\subsection{JWT Token Management}
+
+\begin{itemize}
+    \item \textbf{Token Obtain}: \texttt{POST /api/token/} returns an \texttt{access\_token} (short-lived, 30 min) and a \texttt{refresh\_token} (long-lived, 24 hours).
+    \item \textbf{Token Refresh}: \texttt{POST /api/token/refresh/} silently refreshes the access token before expiry.
+    \item \textbf{Frontend Storage}: Tokens are stored in \texttt{localStorage} and automatically attached to every API request via the Axios interceptor in \texttt{api/client.ts}.
+\end{itemize}
+
+\subsection{Email OTP Verification}
+
+Upon registration, the system:
+\begin{enumerate}
+    \item Generates a random 6-digit OTP code
+    \item Stores it in the \texttt{User.otp\_code} field with a timestamp (\texttt{otp\_created\_at})
+    \item Sends it via Gmail SMTP to the user's email
+    \item The OTP expires after 10 minutes
+    \item Once verified, \texttt{User.is\_verified} is set to \texttt{True}
+\end{enumerate}
+
+\subsection{Role-Based Access Control (RBAC)}
+
+RBAC is enforced at two levels:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/rbac.png}
+    \caption{Role-Based Access Control Flow}
+    \label{fig:rbac}
+\end{figure}
+
+\subsubsection{Backend Permission Classes}
+
+\begin{lstlisting}[language=Python, caption={Custom DRF Permission Classes}]
+class IsAdvisorOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role in ['Advisor', 'Admin']
+
+class IsSuperAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'Admin'
+\end{lstlisting}
+
+\subsubsection{Frontend Layout Guards}
+
+Each portal is wrapped in a layout component that checks \texttt{localStorage.user\_role}:
+
+\begin{itemize}
+    \item \texttt{StudentLayout}: Redirects non-students to \texttt{/login}
+    \item \texttt{AdvisorLayout}: Redirects non-advisors to \texttt{/login} or \texttt{/dashboard}
+    \item \texttt{AdminLayout}: Redirects non-admins to \texttt{/login}
+\end{itemize}
+
+\subsection{Audit Logging}
+
+Critical profile changes (GPA, program, academic year) are automatically logged to the \texttt{AuditLog} table, recording:
+\begin{itemize}
+    \item Which user made the change
+    \item The field name, old value, and new value
+    \item The client's IP address
+    \item Timestamp of the change
+\end{itemize}
+
+Admins can export the full audit log as CSV via \texttt{GET /api/audit/export-csv/}.
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Frontend Architecture}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Component Architecture}
+
+The frontend follows a \textbf{feature-based architecture} where each page is a self-contained component that communicates with the backend through a dedicated service layer.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagrams/frontend.png}
+    \caption{Frontend Component Architecture}
+    \label{fig:frontend}
+\end{figure}
+
+\subsection{Directory Structure}
+
+\begin{lstlisting}[language=bash]
+frontend/src/
+  api/
+    client.ts              # Axios instance with JWT interceptor
+  components/
+    Button.tsx             # Reusable button (primary/secondary/danger)
+    Card.tsx               # Glass-morphic card wrapper
+    Pagination.tsx         # Smart windowed pagination
+    Sidebar.tsx            # Role-aware navigation sidebar
+    Topbar.tsx             # Header bar with user info
+    ErrorBoundary.tsx      # Graceful error handling wrapper
+  features/
+    admin/                 # 6 admin pages
+    advisors/              # 5 advisor pages
+    applications/          # ApplicationsTracker
+    auth/                  # Login, Register, VerifyEmail, etc.
+    careers/               # Comparison, Visualization, Favorites
+    dashboard/             # Student Dashboard
+    misc/                  # StudentMessages, LandingPage, 404
+    profile/               # StudentProfile
+    resources/             # ResourceLibrary
+    skills/                # SkillsCerts
+    index.ts               # Barrel exports for all features
+  layouts/
+    StudentLayout.tsx      # RBAC guard for Student role
+    AdvisorLayout.tsx      # RBAC guard for Advisor role
+    AdminLayout.tsx        # RBAC guard for Admin role
+    AuthLayout.tsx         # Public auth pages layout
+  routes/
+    AppRoutes.tsx          # All 30 routes with layout grouping
+  services/
+    student.service.ts     # Student API methods
+    advisor.service.ts     # Advisor API methods
+    admin.service.ts       # Admin API methods
+    skill.service.ts       # Skills CRUD API methods
+  types/
+    index.ts               # TypeScript interfaces
+\end{lstlisting}
+
+\subsection{API Client}
+
+The API client (\texttt{api/client.ts}) is an Axios instance configured to:
+
+\begin{enumerate}
+    \item Automatically attach the JWT \texttt{Authorization: Bearer <token>} header to every request
+    \item Point all requests to \texttt{http://localhost:8000} (the Django backend)
+    \item Handle error responses with structured error messages
+\end{enumerate}
+
+\subsection{Service Layer Pattern}
+
+Each portal has a dedicated service file that encapsulates all API calls:
+
+\begin{lstlisting}[language=bash, caption={Service Method Examples}]
+# student.service.ts
+getProfile()            -> GET  /api/profiles/me/
+updateProfile(data)     -> PATCH /api/profiles/me/
+getRecommendations()    -> GET  /api/recommendations/
+getFavoriteCareers()    -> GET  /api/careers/favorites/
+getApplications(page)   -> GET  /api/applications/?page=N
+getResources(page)      -> GET  /api/resources/?page=N
+
+# advisor.service.ts
+getStudents(page)       -> GET  /api/advisors/students/
+createIntervention(d)   -> POST /api/advisors/interventions/
+sendMessage(data)       -> POST /api/notifications/advisor-messages/
+
+# admin.service.ts
+getSystemOverview()     -> GET  /api/analytics/overview/
+getPermissionMatrix()   -> GET  /api/analytics/permission-matrix/
+getUsers(page)          -> GET  /api/admin/users/?page=N
+exportAuditLogsCsv()    -> GET  /api/audit/export-csv/
+\end{lstlisting}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{API Endpoints Reference}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Authentication Endpoints}
+
+\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+POST & \texttt{/api/token/} & Obtain JWT access + refresh tokens \\
+POST & \texttt{/api/token/refresh/} & Refresh access token \\
+POST & \texttt{/api/auth/register/} & Register new user \\
+POST & \texttt{/api/auth/verify-email/} & Verify email with OTP \\
+POST & \texttt{/api/auth/forgot-password/} & Request password reset OTP \\
+POST & \texttt{/api/auth/reset-password/} & Reset password with OTP \\
+\bottomrule
+\end{longtable}
+
+\subsection{Student Endpoints}
+
+\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+GET & \texttt{/api/profiles/me/} & Get current student profile \\
+PATCH & \texttt{/api/profiles/me/} & Update profile fields \\
+POST & \texttt{/api/profiles/upload-transcript/} & Upload PDF transcript \\
+GET & \texttt{/api/skills/} & List all skills (searchable) \\
+GET/POST & \texttt{/api/skills/my/} & Student's skills CRUD \\
+GET & \texttt{/api/certifications/my/} & Student's certifications \\
+GET & \texttt{/api/recommendations/} & AI career recommendations \\
+POST & \texttt{/api/careers/assessments/} & Submit career assessment \\
+GET/POST & \texttt{/api/careers/favorites/} & Toggle favorite careers \\
+GET & \texttt{/api/internships/} & Browse internships \\
+POST & \texttt{/api/applications/} & Submit application \\
+GET & \texttt{/api/applications/} & List applications \\
+GET & \texttt{/api/resources/} & Browse resources \\
+GET & \texttt{/api/notifications/student-messages/} & View advisor messages \\
+\bottomrule
+\end{longtable}
+
+\subsection{Advisor Endpoints}
+
+\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+GET & \texttt{/api/advisors/students/} & List all student profiles \\
+POST & \texttt{/api/advisors/interventions/} & Log an intervention \\
+GET & \texttt{/api/advisors/interventions/} & Intervention history \\
+POST & \texttt{/api/notifications/advisor-messages/} & Send message to student \\
+\bottomrule
+\end{longtable}
+
+\subsection{Admin Endpoints}
+
+\begin{longtable}{p{2cm}p{5.5cm}p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+GET & \texttt{/api/admin/users/} & List all users \\
+POST & \texttt{/api/admin/users/} & Create user \\
+PATCH & \texttt{/api/admin/users/<id>/} & Update user \\
+DELETE & \texttt{/api/admin/users/<id>/} & Delete user \\
+GET & \texttt{/api/analytics/overview/} & System overview stats \\
+GET & \texttt{/api/analytics/permission-matrix/} & RBAC permission matrix \\
+GET & \texttt{/api/analytics/encryption-status/} & Security config status \\
+GET & \texttt{/api/audit/export-csv/} & Export audit log as CSV \\
+GET/POST & \texttt{/api/skills/} & Skills dictionary CRUD \\
+GET/POST & \texttt{/api/certifications/} & Certifications CRUD \\
+GET/POST & \texttt{/api/internships/} & Internship management \\
+GET & \texttt{/api/applications/} & All student applications \\
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Frontend Routes}
+% ══════════════════════════════════════════════════════════════
+
+\begin{longtable}{p{4.5cm}p{2.5cm}p{7cm}}
+\toprule
+\textbf{Route Path} & \textbf{Portal} & \textbf{Component} \\
+\midrule
+\endhead
+\texttt{/} & Public & LandingPage \\
+\texttt{/login} & Auth & Login \\
+\texttt{/register} & Auth & Register \\
+\texttt{/verify-email} & Auth & VerifyEmail \\
+\texttt{/forgot-password} & Auth & ForgotPassword \\
+\texttt{/reset-password} & Auth & ResetPassword \\
+\midrule
+\texttt{/dashboard} & Student & Dashboard \\
+\texttt{/profile} & Student & StudentProfile (editable) \\
+\texttt{/skills} & Student & SkillsCerts \\
+\texttt{/assessment} & Student & CareerAssessment \\
+\texttt{/recommendations} & Student & RecommendationsPage \\
+\texttt{/career-path} & Student & CareerVisualization \\
+\texttt{/compare} & Student & CareerComparison \\
+\texttt{/favorites} & Student & FavoriteCareers \\
+\texttt{/internships} & Student & InternshipBoard \\
+\texttt{/applications} & Student & ApplicationsTracker \\
+\texttt{/resources} & Student & ResourceLibrary \\
+\texttt{/messages} & Student & StudentMessages \\
+\midrule
+\texttt{/advisor/home} & Advisor & AdvisorHome \\
+\texttt{/students} & Advisor & AdvisorDashboard \\
+\texttt{/advisor/messages} & Advisor & AdvisorNotifications \\
+\texttt{/interventions} & Advisor & InterventionsHistory \\
+\texttt{/advisor/resources} & Advisor & AdvisorResourceLibrary \\
+\midrule
+\texttt{/admin/dashboard} & Admin & AdminDashboard \\
+\texttt{/admin/users} & Admin & AdminUsers \\
+\texttt{/admin/analytics} & Admin & AdminAnalytics \\
+\texttt{/admin/internships} & Admin & AdminInternships \\
+\texttt{/admin/content} & Admin & AdminContent \\
+\texttt{/admin/settings} & Admin & AdminSettings \\
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Data Seeding}
+% ══════════════════════════════════════════════════════════════
+
+The system uses Django management commands to seed initial data:
+
+\begin{longtable}{p{5.5cm}p{8.5cm}}
+\toprule
+\textbf{Command} & \textbf{What It Does} \\
+\midrule
+\endhead
+\texttt{python manage.py migrate} & Creates all 20 database tables from Django migrations \\
+\texttt{python manage.py seed\_onet} & Seeds 904 O*NET career clusters with associated skills from the dataset \\
+\texttt{python manage.py seed\_certs} & Seeds professional certifications (AWS, Google, etc.) mapped to career clusters \\
+\texttt{python manage.py seed\_internships} & Seeds mock internship postings linked to career clusters \\
+\texttt{python create\_admin.py} & Creates or resets the admin superuser account \\
+\bottomrule
+\end{longtable}
+
+\subsection{Test Accounts}
+
+\begin{longtable}{p{4cm}p{5.5cm}p{3cm}}
+\toprule
+\textbf{Role} & \textbf{Email} & \textbf{Password} \\
+\midrule
+Admin & \texttt{admin@auca.ac.rw} & \texttt{123} \\
+Advisor & \texttt{test\_advisor\_api@auca.ac.rw} & \texttt{advisorpass123} \\
+Student & \texttt{test\_student\_api@auca.ac.rw} & \texttt{studentpass123} \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════════════════════
+\section{How to Run the Project}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Prerequisites}
+\begin{itemize}
+    \item Python 3.10+ installed
+    \item PostgreSQL installed and running
+    \item Node.js 18+ and npm installed
+    \item A Gmail account with an App Password for SMTP
+\end{itemize}
+
+\subsection{Backend Setup}
+\begin{lstlisting}[language=bash]
+# Clone the repository
+git clone https://github.com/andremugabo/career-advisor.git
+cd career-advisor/backend
+
+# Activate virtual environment
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Create .env file with database credentials
+# Run migrations and seed data
+python manage.py migrate
+python manage.py seed_onet
+python manage.py seed_certs
+python manage.py seed_internships
+python create_admin.py
+
+# Start the development server
+python manage.py runserver
+\end{lstlisting}
+
+\subsection{Frontend Setup}
+\begin{lstlisting}[language=bash]
+cd career-advisor/frontend
+npm install
+npm run dev
+\end{lstlisting}
+
+\subsection{Access Points}
+\begin{itemize}
+    \item \textbf{Frontend}: \url{http://localhost:3000}
+    \item \textbf{Backend API}: \url{http://localhost:8000}
+    \item \textbf{Swagger Docs}: \url{http://localhost:8000/api/docs/}
+    \item \textbf{Django Admin}: \url{http://localhost:8000/admin/}
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+\section{Testing}
+% ══════════════════════════════════════════════════════════════
+
+\subsection{Automated Integration Tests}
+\begin{lstlisting}[language=bash]
+# Full feature integration test
+python manage.py test_all_features
+
+# Server connectivity check
+python dataset/test_server_connectivity.py
+\end{lstlisting}
+
+The integration test suite covers:
+\begin{itemize}
+    \item User registration and authentication
+    \item Profile creation and updating (with audit log verification)
+    \item Skill and certification CRUD operations
+    \item AI recommendation generation
+    \item Internship search and application
+    \item Advisor access restrictions (403 Forbidden for students)
+    \item Audit log completeness
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════
+\section{Summary of Functional Requirements}
+% ══════════════════════════════════════════════════════════════
+
+\begin{longtable}{p{1.5cm}p{5cm}p{7.5cm}}
+\toprule
+\textbf{FR} & \textbf{Requirement} & \textbf{Implementation} \\
+\midrule
+\endhead
+FR-01 & User Authentication & JWT + OTP email verification + role-based registration \\
+FR-02 & Student Profile Management & Editable profile with GPA, bio, transcript upload \\
+FR-03 & Skills Tracking & 533+ skill dictionary, proficiency levels (1--5), program skills \\
+FR-04 & AI Career Matching & Cosine similarity engine with 904 O*NET clusters \\
+FR-05 & Skill Gap Analysis & Missing skills computed per career match \\
+FR-06 & Student-Advisor Messaging & AdvisorMessage model with read/unread tracking \\
+FR-07 & Certification Pathways & Certifications mapped to career clusters with document upload \\
+FR-08 & Internship Matching & AI-sorted internships by student compatibility score \\
+FR-09 & Advisor Monitoring & Student list, interventions (8 types), direct messaging \\
+FR-10 & RBAC Security & Three-tier role system enforced at frontend + backend \\
+FR-11 & Audit Logging & IP-tracked change logs with CSV export \\
+FR-12 & Admin Management & User CRUD, analytics, permission matrix editor, system settings \\
+\bottomrule
+\end{longtable}
+
+\end{document}
