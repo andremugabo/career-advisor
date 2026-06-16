@@ -228,7 +228,7 @@ export default function Dashboard() {
                     </div>
                     <div className="space-y-2">
                       {selectedCareer.missing_skills.slice(0, 4).map((skill: string, idx: number) => (
-                        <div key={idx} className="text-sm text-rose-900 font-medium">⚠ {skill}</div>
+                        <div key={idx} className="text-sm text-rose-900 font-medium flex items-center gap-1.5"><AlertTriangle size={12} /> {skill}</div>
                       ))}
                     </div>
                   </div>

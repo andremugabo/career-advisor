@@ -131,7 +131,7 @@ export const ResourceLibrary = () => {
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          📚 Browse All
+          <Library className="w-4 h-4 inline mr-1" /> Browse All
         </button>
         <button
           onClick={() => setActiveTab('saved')}

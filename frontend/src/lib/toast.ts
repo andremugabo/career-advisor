@@ -1,4 +1,6 @@
 import toast from 'react-hot-toast';
+import { createElement } from 'react';
+import { Info } from 'lucide-react';
 
 /**
  * Centralized Toaster Utility
@@ -29,7 +31,7 @@ export const notify = {
   },
   info: (message: string) => {
     toast(message, {
-      icon: 'ℹ️',
+      icon: createElement(Info, { size: 18, color: '#475569' }),
       style: {
         background: '#ffffff',
         color: '#475569',

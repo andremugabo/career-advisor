@@ -524,10 +524,10 @@ export default function AdvisorDashboard() {
                               </div>
 
                               <div className="bg-rose-50 border border-rose-100 rounded-xl p-3.5">
-                                <div className="text-[10px] text-rose-700 font-bold uppercase tracking-wider mb-2">⚠ Gaps ({selectedCareer.total_missing})</div>
+                                <div className="text-[10px] text-rose-700 font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><AlertTriangle size={10} /> Gaps ({selectedCareer.total_missing})</div>
                                 <div className="space-y-1">
                                   {selectedCareer.missing_skills.slice(0, 3).map((skill: string, idx: number) => (
-                                    <div key={idx} className="text-xs text-rose-900 font-medium">⚠ {skill}</div>
+                                    <div key={idx} className="text-xs text-rose-900 font-medium flex items-center gap-1"><AlertTriangle size={10} /> {skill}</div>
                                   ))}
                                   {selectedCareer.missing_skills.length === 0 && (
                                     <div className="text-xs text-rose-600 italic">No missing skills!</div>

@@ -4,7 +4,8 @@ import { studentService } from '../../services';
 import { notify } from '../../lib/toast';
 import {
   UserCircle, FileText, Save, Star,
-  Plus, Trash2, Upload, Shield
+  Plus, Trash2, Upload, Shield,
+  User, GraduationCap, Sparkles, Briefcase, Target
 } from 'lucide-react';
 import { StudentProfile as StudentProfileType, WorkExperience } from '../../types';
 
@@ -269,7 +270,7 @@ export const StudentProfile = () => {
 
       <form onSubmit={handleSaveProfile} className="space-y-6">
         {/* ─── 1. Personal Information ─── */}
-        <SectionCard icon={<span>👤</span>} title="Personal Information">
+        <SectionCard icon={<User className="w-5 h-5 text-[#146C94]" />} title="Personal Information">
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Full Name</label>
@@ -324,7 +325,7 @@ export const StudentProfile = () => {
         </SectionCard>
 
         {/* ─── 2. Academic Information ─── */}
-        <SectionCard icon={<span>🎓</span>} title="Academic Information">
+        <SectionCard icon={<GraduationCap className="w-5 h-5 text-[#146C94]" />} title="Academic Information">
           <div className="space-y-4">
             <div>
               <label className={labelClass}>University / Institution</label>
@@ -409,7 +410,7 @@ export const StudentProfile = () => {
         </SectionCard>
 
         {/* ─── 3. Skills & Certifications ─── */}
-        <SectionCard icon={<span>✨</span>} title="Skills & Certifications">
+        <SectionCard icon={<Sparkles className="w-5 h-5 text-[#146C94]" />} title="Skills & Certifications">
           <div className="space-y-4">
             <div>
               <label className={labelClass}>Skills</label>
@@ -467,7 +468,7 @@ export const StudentProfile = () => {
         </SectionCard>
 
         {/* ─── 4. Work Experience ─── */}
-        <SectionCard icon={<span>💼</span>} title="Work Experience">
+        <SectionCard icon={<Briefcase className="w-5 h-5 text-[#146C94]" />} title="Work Experience">
           {/* Existing entries */}
           {workExperiences.length > 0 && (
             <div className="space-y-3 mb-6">
@@ -547,7 +548,7 @@ export const StudentProfile = () => {
         </SectionCard>
 
         {/* ─── 5. Career Interests ─── */}
-        <SectionCard icon={<span>🎯</span>} title="Career Interests">
+        <SectionCard icon={<Target className="w-5 h-5 text-[#146C94]" />} title="Career Interests">
           <div className="space-y-4">
             <div>
               <label className={labelClass}>Preferred Fields</label>
@@ -583,7 +584,7 @@ export const StudentProfile = () => {
         </SectionCard>
 
         {/* ─── 6. Academic Transcript Upload ─── */}
-        <SectionCard icon={<span>📄</span>} title="Academic Transcript">
+        <SectionCard icon={<FileText className="w-5 h-5 text-[#146C94]" />} title="Academic Transcript">
           <p className="text-sm text-slate-500 mb-4">
             Upload your latest academic transcript (PDF). Emmerence AI will parse it and enrich your profile.
           </p>
