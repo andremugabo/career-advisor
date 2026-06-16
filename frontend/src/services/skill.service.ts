@@ -36,7 +36,7 @@ export const skillService = {
     return apiFetch<any>('/certifications/my/', {
       method: 'POST',
       body: JSON.stringify({
-        cert: certId,
+        cert_id: certId,
         status: certStatus,
         completion_date: completionDate || null,
       }),
