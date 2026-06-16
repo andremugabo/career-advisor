@@ -33,7 +33,7 @@ export const AdvisorNotifications = () => {
       setStudents(studentData.results || studentData || []);
       const studentsList = studentData.results || studentData || [];
       if (studentsList.length > 0) {
-        setRecipient(studentsList[0].id.toString());
+        setRecipient(studentsList[0].id?.toString() || '');
       }
     } catch (error: any) {
       notify.error(error.message || 'Failed to load messages.');
@@ -162,13 +162,13 @@ export const AdvisorNotifications = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h4 className={`font-bold ${notif.is_read ? 'text-slate-700' : 'text-[#146C94]'}`}>{notif.subject}</h4>
-                      <span className="text-xs text-slate-500">To/From: {notif.recipient_name || notif.sender_name || 'Student'}</span>
+                      <span className="text-xs text-slate-500">To: {notif.recipient_name || 'Student'}</span>
                     </div>
                     <span className="text-[10px] text-slate-400 whitespace-nowrap ml-4">
                       {new Date(notif.created_at).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600 mb-3">{notif.message}</p>
+                  <p className="text-sm text-slate-600 mb-3">{notif.body}</p>
                   
                   {!notif.is_read && (
                     <div className="flex justify-end">
