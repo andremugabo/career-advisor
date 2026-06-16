@@ -1,5 +1,7 @@
 import os
 import json
+import logging
+import functools
 from django.conf import settings
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -10,6 +12,18 @@ from apps.skills.models import Certification
 from apps.recommendations.models import MatchResult
 from apps.recommendations.serializers import MatchResultSerializer, CareerRecommendationSerializer
 from ai.recommenders.career_recommender import CareerRecommender
+
+logger = logging.getLogger(__name__)
+
+def handle_exceptions(func):
+    @functools.wraps(func)
+    def wrapper(self, request, *args, **kwargs):
+        try:
+            return func(self, request, *args, **kwargs)
+        except Exception as e:
+            logger.exception("Unexpected error in %s", func.__name__)
+            return Response({"error": "Internal server error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return wrapper
 
 # Load compiled education & experience mappings
 MAPPINGS_PATH = os.path.join(settings.BASE_DIR, 'dataset', 'education_experience_mappings.json')
@@ -22,9 +36,36 @@ if os.path.exists(MAPPINGS_PATH):
         pass
 
 
+def get_education_mapping(onet_code):
+    """
+    Look up education/experience data for an O*NET code.
+    Uses a 3-tier fallback strategy:
+      1. Exact match (e.g. '15-2051.00')
+      2. Same occupation family (e.g. '15-2051.xx')
+      3. Same occupation group (e.g. '13-20xx.xx') — nearest neighbour
+    """
+    if not onet_code:
+        return {}
+    # Tier 1: Exact match
+    if onet_code in EDUCATION_MAPPINGS:
+        return EDUCATION_MAPPINGS[onet_code]
+    # Tier 2: Same occupation family prefix (XX-XXXX)
+    prefix_7 = onet_code[:7]  # e.g. "15-2051"
+    for key, value in EDUCATION_MAPPINGS.items():
+        if key.startswith(prefix_7):
+            return value
+    # Tier 3: Same occupation group prefix (XX-XX) — picks the closest neighbour
+    prefix_5 = onet_code[:5]  # e.g. "13-20"
+    for key, value in EDUCATION_MAPPINGS.items():
+        if key.startswith(prefix_5):
+            return value
+    return {}
+
+
 class RecommendationViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
+    @handle_exceptions
     def list(self, request):
         """
         GET /api/recommendations/
@@ -83,15 +124,20 @@ class RecommendationViewSet(viewsets.ViewSet):
 
             # Attach Education and Experience suggestions
             onet_code = rec.get('onet_code')
-            mapping = EDUCATION_MAPPINGS.get(onet_code, {})
+            mapping = get_education_mapping(onet_code)
             rec['required_education'] = mapping.get('required_education', 'Not Specified')
             rec['work_experience'] = mapping.get('work_experience', 'Not Specified')
             rec['on_the_job_training'] = mapping.get('on_the_job_training', 'Not Specified')
+
+        # Let the frontend handle the empty state
+        # if not recommendations:
+        #     recommendations = []
 
         serializer = CareerRecommendationSerializer(recommendations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='history')
+    @handle_exceptions
     def history(self, request):
         """
         GET /api/recommendations/history/
@@ -136,6 +182,7 @@ class RecommendationViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='export-pdf')
+    @handle_exceptions
     def export_pdf(self, request):
         """
         GET /api/recommendations/export-pdf/
@@ -162,16 +209,26 @@ class RecommendationViewSet(viewsets.ViewSet):
         p = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
 
+        # Enhanced PDF styling with colors
+        from reportlab.lib import colors
         p.setFont("Helvetica-Bold", 16)
+        p.setFillColor(colors.darkblue)
         p.drawString(100, height - 80, f"Career Recommendations Report")
+        p.setFillColor(colors.black)
         p.setFont("Helvetica", 12)
         p.drawString(100, height - 100, f"Student: {student.full_name}")
         p.drawString(100, height - 120, f"Registration Number: {student.reg_number}")
+        # Header bar with background color
+        p.setFillColor(colors.lightgrey)
+        p.rect(95, height - 130, width - 190, 30, fill=1, stroke=0)
+        p.setFillColor(colors.darkblue)
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(100, height - 120, "Career Recommendations")
 
         y_pos = height - 160
         for idx, rec in enumerate(recommendations):
             p.setFont("Helvetica-Bold", 14)
-            p.drawString(100, y_pos, f"{idx + 1}. {rec.get('career_name', 'Unknown')}")
+            p.drawString(100, y_pos, f"{idx + 1}. {rec.get('career_name') or rec.get('title', 'Unknown')}")
             y_pos -= 20
             p.setFont("Helvetica", 12)
             p.drawString(120, y_pos, f"Match: {rec.get('match_percentage', 0)}%")

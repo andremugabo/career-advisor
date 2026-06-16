@@ -21,6 +21,7 @@ class MatchResultSerializer(serializers.ModelSerializer):
         fields = ['id', 'cluster', 'match_score', 'confidence', 'timestamp']
 
 class CareerRecommendationSerializer(serializers.Serializer):
+    career_name = serializers.CharField(source='title')
     career_id = serializers.IntegerField()
     onet_code = serializers.CharField()
     title = serializers.CharField()
