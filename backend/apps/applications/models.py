@@ -12,4 +12,4 @@ class Application(AbstractAuditEntity):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
 
     def __str__(self):
-        return f"{self.student.full_name} -> {self.internship.role_name}"
+        return f"{self.student.full_name} -> {self.internship.title}"
