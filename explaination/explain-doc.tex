@@ -20,7 +20,7 @@
 \usepackage{float}
 \usepackage{caption}
 \usepackage{parskip}
-\usepackage{rotating}
+\usepackage{pdflscape}
 \usepackage[export]{adjustbox}
 \usepackage{afterpage}
 
@@ -140,12 +140,14 @@ The system follows a \textbf{decoupled client-server architecture}. The React fr
     \item \textbf{Role-Based Access Control (RBAC)}: Enforced at both the frontend (layout guards) and backend (DRF permission classes) levels.
 \end{itemize}
 
-\begin{sidewaysfigure}[p]
+\begin{landscape}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=\textheight,height=0.8\textwidth,keepaspectratio]{diagrams/architecture.png}
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{diagrams/architecture.png}
     \caption{High-Level System Architecture}
     \label{fig:architecture}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 % ══════════════════════════════════════════════════════════════
 \section{Technology Stack}
@@ -252,12 +254,14 @@ This ensures every record in the database has:
 
 The system contains \textbf{20 database tables} across 13 domain modules. All relationships use UUIDs as foreign keys. The full ERD is shown on the following landscape page.
 
-\begin{sidewaysfigure}[p]
+\begin{landscape}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=\textheight,height=0.8\textwidth,keepaspectratio]{diagrams/erd.png}
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{diagrams/erd.png}
     \caption{Complete Entity Relationship Diagram --- 20 Tables Across 13 Domain Modules}
     \label{fig:erd}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 \subsubsection{Key Models Explained}
 
@@ -390,12 +394,14 @@ Upon registration, the system:
 
 RBAC is enforced at two levels:
 
-\begin{sidewaysfigure}[p]
+\begin{landscape}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=\textheight,height=0.45\textwidth,keepaspectratio]{diagrams/rbac.png}
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{diagrams/rbac.png}
     \caption{Role-Based Access Control Flow --- Three-Tier Portal Routing}
     \label{fig:rbac}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 \subsubsection{Backend Permission Classes}
 
@@ -441,12 +447,14 @@ Admins can export the full audit log as CSV via \texttt{GET /api/audit/export-cs
 
 The frontend follows a \textbf{feature-based architecture} where each page is a self-contained component that communicates with the backend through a dedicated service layer.
 
-\begin{sidewaysfigure}[p]
+\begin{landscape}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=\textheight,height=0.5\textwidth,keepaspectratio]{diagrams/frontend.png}
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{diagrams/frontend.png}
     \caption{Frontend Component Architecture --- 24 Pages, Service Layer, API Client}
     \label{fig:frontend}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 \subsection{Directory Structure}
 
