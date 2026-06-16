@@ -56,3 +56,11 @@ frontend/yarn-error.log*
 frontend/.pnp
 frontend/.pnp.js
 
+
+# LaTeX build artifacts
+*.aux
+*.toc
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
