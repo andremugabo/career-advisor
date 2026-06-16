@@ -271,9 +271,9 @@ export const SkillsCerts = () => {
             {!hasVerifiedSkills ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                 <AlertCircle className="w-12 h-12 text-slate-300 mb-3" />
-                <h4 className="text-sm font-bold text-slate-600">No Verified Skills Mapped</h4>
+                <h4 className="text-sm font-bold text-slate-600">No Program Skills Mapped</h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Please speak to your career advisor to map your competencies for accurate AI recommendations.
+                  These skills auto-populate from your academic program. Go to <span className="font-semibold text-[#146C94]">My Profile → Academic Information</span> and select your program to see your program competencies here.
                 </p>
               </div>
             ) : (
@@ -310,9 +310,9 @@ export const SkillsCerts = () => {
         {!hasCerts ? (
           <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
             <Award className="w-12 h-12 text-slate-300 mb-3" />
-            <h4 className="text-sm font-bold text-slate-600">No Certifications Recorded</h4>
+            <h4 className="text-sm font-bold text-slate-600">No Certifications Yet</h4>
             <p className="text-xs text-slate-500 mt-1 max-w-sm">
-              You have not registered any external certifications yet. To record a certification, please present your certificate of completion to the administration.
+              You have no certifications linked to your profile yet. Certifications such as AWS, Google, or Cisco credentials will appear here once registered by the administration.
             </p>
           </div>
         ) : (
