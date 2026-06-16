@@ -1,4 +1,6 @@
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from apps.users.models import User
 from apps.users.serializers import UserSerializer
 
@@ -30,3 +32,9 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-created_at')
     serializer_class = UserSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
