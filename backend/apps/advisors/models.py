@@ -17,6 +17,10 @@ class StudentIntervention(AbstractAuditEntity):
         ('GPA Improvement', 'GPA Improvement'),
         ('Career Counseling', 'Career Counseling'),
         ('Academic Guidance', 'Academic Guidance'),
+        ('Academic Counseling', 'Academic Counseling'),
+        ('Skills Training Recommended', 'Skills Training Recommended'),
+        ('Career Track Updated', 'Career Track Updated'),
+        ('Email Warning Sent', 'Email Warning Sent'),
     )
 
     advisor = models.ForeignKey(Advisor, on_delete=models.CASCADE, related_name='interventions')

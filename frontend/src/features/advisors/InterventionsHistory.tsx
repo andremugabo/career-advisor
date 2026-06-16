@@ -23,6 +23,10 @@ const INTERVENTION_TYPES = [
   'GPA Improvement',
   'Career Counseling',
   'Academic Guidance',
+  'Academic Counseling',
+  'Skills Training Recommended',
+  'Career Track Updated',
+  'Email Warning Sent',
 ];
 
 export const InterventionsHistory = () => {

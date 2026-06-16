@@ -35,6 +35,7 @@ import {
   ApplicationsTracker,
   AdminAnalytics,
   NotFoundPage,
+  StudentMessages,
 } from '../features';
 
 export default function AppRoutes() {
@@ -74,13 +75,14 @@ export default function AppRoutes() {
           <Route path="/favorites" element={<FavoriteCareers />} />
           <Route path="/resources" element={<ResourceLibrary />} />
           <Route path="/applications" element={<ApplicationsTracker />} />
+          <Route path="/messages" element={<StudentMessages />} />
         </Route>
 
         {/* Advisor Routes wrapped in RBAC AdvisorLayout */}
         <Route element={<AdvisorLayout />}>
           <Route path="/advisor/home" element={<AdvisorHome />} />
           <Route path="/students" element={<AdvisorDashboard />} />
-          <Route path="/messages" element={<AdvisorNotifications />} />
+          <Route path="/advisor/messages" element={<AdvisorNotifications />} />
           <Route path="/interventions" element={<InterventionsHistory />} />
           <Route path="/advisor/resources" element={<AdvisorResourceLibrary />} />
         </Route>

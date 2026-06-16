@@ -7,10 +7,11 @@ class AdvisorStudentProfileSerializer(serializers.ModelSerializer):
     program = serializers.CharField(source='program.name', read_only=True)
     skills = serializers.SerializerMethodField()
     top_recommendations = serializers.SerializerMethodField()
+    user_id = serializers.UUIDField(source='user.id', read_only=True)
 
     class Meta:
         model = Student
-        fields = ['id', 'reg_number', 'full_name', 'gpa', 'program', 'current_year', 'bio', 'skills', 'top_recommendations']
+        fields = ['id', 'user_id', 'reg_number', 'full_name', 'gpa', 'program', 'current_year', 'bio', 'skills', 'top_recommendations']
 
     def get_skills(self, obj):
         return [student_skill.skill.name for student_skill in obj.student_skills.select_related('skill').all()]

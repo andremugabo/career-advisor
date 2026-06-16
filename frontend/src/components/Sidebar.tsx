@@ -27,11 +27,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, isOpen = false, setIsOpe
     { name: 'Internships', path: '/internships', icon: <Briefcase className="w-5 h-5" />, roles: ['Student'] },
     { name: 'My Applications', path: '/applications', icon: <ClipboardList className="w-5 h-5" />, roles: ['Student'] },
     { name: 'Resource Library', path: '/resources', icon: <Library className="w-5 h-5" />, roles: ['Student'] },
+    { name: 'Advisor Messages', path: '/messages', icon: <MessageSquare className="w-5 h-5" />, roles: ['Student'] },
     
     // Advisor Links
     { name: 'Dashboard', path: '/advisor/home', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['Advisor'] },
     { name: 'Students', path: '/students', icon: <Users className="w-5 h-5" />, roles: ['Advisor'] },
-    { name: 'Messages', path: '/messages', icon: <MessageSquare className="w-5 h-5" />, roles: ['Advisor'] },
+    { name: 'Messages', path: '/advisor/messages', icon: <MessageSquare className="w-5 h-5" />, roles: ['Advisor'] },
     { name: 'Interventions', path: '/interventions', icon: <ClipboardList className="w-5 h-5" />, roles: ['Advisor'] },
     { name: 'Resource Library', path: '/advisor/resources', icon: <Library className="w-5 h-5" />, roles: ['Advisor'] },
 

@@ -42,7 +42,7 @@ export default function AdvisorHome() {
 
   const quickActions = [
     { label: 'View All Students', icon: Users, path: '/students', color: '#146C94' },
-    { label: 'Messages', icon: MessageSquare, path: '/messages', color: '#19A7CE' },
+    { label: 'Messages', icon: MessageSquare, path: '/advisor/messages', color: '#19A7CE' },
     { label: 'Interventions', icon: ClipboardList, path: '/interventions', color: '#0f766e' },
     { label: 'Resource Library', icon: Library, path: '/advisor/resources', color: '#7c3aed' },
   ];
