@@ -32,6 +32,7 @@ class Certification(AbstractAuditEntity):
 class StudentCertification(AbstractAuditEntity):
     STATUS_CHOICES = (
         ('Planning', 'Planning'),
+        ('In Progress', 'In Progress'),
         ('Completed', 'Completed'),
     )
     student = models.ForeignKey('profiles.Student', on_delete=models.CASCADE, related_name='student_certifications')
