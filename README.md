@@ -142,19 +142,29 @@ cd career-advisor/backend
 
 > [!IMPORTANT]
 > **Virtual Environment Requirement**:
-> On macOS/Linux, running generic `python` command directly in the shell will result in `zsh: command not found: python`.
-> You **MUST** either activate the virtual environment first, or use `python3` / `venv/bin/python` to invoke Django tasks.
+> On macOS/Linux, running the generic `python` command directly in the shell might result in `zsh: command not found: python`.
+> You **MUST** run inside a virtual environment or use `python3`.
 
-Activate the dedicated Python virtual environment:
+Create and activate a dedicated Python virtual environment, then install the dependencies:
 ```bash
+# 1. Create the virtual environment
+python -m venv venv   # Or: python3 -m venv venv
+
+# 2. Activate it
 source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+
+# 3. Install backend dependencies
+pip install -r requirements.txt
 ```
 
 Create a `.env` file inside the `backend/` directory:
 ```env
 # backend/.env 
 SECRET_KEY="django-insecure-your-secret-key"
+# If using PostgreSQL, ensure you create a database named 'career-advisor_db'
 DATABASE_URL="postgres://postgres:123@localhost:5432/career-advisor_db"
+# Or simply fallback to local SQLite for immediate testing:
+# DATABASE_URL="sqlite:///db.sqlite3"
 ```
 
 ### 2. Schema Migrations, Seeding & AI Model Initialization
@@ -195,13 +205,14 @@ The master seeder automatically performs 7 initialization steps:
 ### 4. Running the Dev Servers
 ```bash
 # Start backend on http://127.0.0.1:8000
-# Ensure you are inside the backend/ directory and activate the virtual environment first
+# Ensure you are inside the backend/ directory and the virtual environment is active
 source venv/bin/activate
 python manage.py runserver  # Or: python3 manage.py runserver
 
 # Start frontend (in a separate terminal inside frontend/ directory)
 cd ../frontend
-npm run dev
+npm install      # Install Node dependencies (only needed the first time)
+npm run dev      # Start Vite dev server on http://localhost:5173
 ```
 
 ---
