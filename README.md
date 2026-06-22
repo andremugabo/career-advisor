@@ -157,25 +157,28 @@ SECRET_KEY="django-insecure-your-secret-key"
 DATABASE_URL="postgres://postgres:123@localhost:5432/career-advisor_db"
 ```
 
-### 2. Schema Migrations & Seeding Mappings
-First, execute schema migrations to initialize all tables, then run the seeders to populate the database:
+### 2. Schema Migrations, Seeding & AI Model Initialization
+First, execute schema migrations to initialize all tables. After migrations, you must run the **Master Seeder**. 
+
+Because this application uses a custom cosine similarity matching engine, it requires a fully populated dataset (O*NET career clusters, skills mappings, and academic programs) to build the keyword-bag vectors properly. The `seed_all` command processes the `.csv` and `.sql` datasets, essentially acting as the "training" phase for the AI matching algorithm by defining the weights and relationships between skills and careers.
 
 ```bash
-# 1. Push database schemas to PostgreSQL
+# 1. Push database schemas to PostgreSQL (or SQLite locally)
 python manage.py migrate
 
-# 2. Seed 904 O*NET Career Clusters and core Skills dictionary
-python manage.py seed_onet
-
-# 3. Seed professional certifications mapped to technical skills
-python manage.py seed_certs
-
-# 4. Seed mock internship vacancies matching career clusters
-python manage.py seed_internships
-
-# 5. Create or reset the master admin user
-python create_admin.py
+# 2. Run the Master Seeder to populate datasets, initialize AI relationships, and create accounts
+python manage.py seed_all
 ```
+
+The master seeder automatically performs 7 initialization steps:
+1. Seeds 904 O*NET Career Clusters & Technical Skills from datasets.
+2. Seeds the Soft Skills dictionary.
+3. Seeds Academic Programs with program-to-skills M2M mappings (crucial for AI accuracy).
+4. Seeds Professional Certifications.
+5. Seeds Internship Vacancies.
+6. Seeds the RIASEC Career Assessment template and Resource Library.
+7. Creates `Admin`, `Advisor`, and test `Student` accounts.
+
 *(If you are running without activating the virtual environment, replace `python` with `python3` in all commands above).*
 
 ### 3. System Passwords Cheat Sheet
@@ -256,7 +259,13 @@ This command spins up the Django client, mock-logs in student/advisor sessions, 
 python manage.py test_all_features  # Or: python3 manage.py test_all_features
 ```
 
-### 2. Handshake Connectivity Check
+### 2. AI Engine Testing & Vector Output Validation
+This command tests the AI matching engine locally on the command line. It verifies the vectorization token overlaps, checks program domain boosts, and calculates Cosine Similarity in real-time, giving you a detailed dump of why a student matched with certain careers:
+```bash
+python manage.py test_ai_engine
+```
+
+### 3. Handshake Connectivity Check
 Run this script to verify that the live servers are up, healthy, and correctly passing auth headers:
 ```bash
 python dataset/test_server_connectivity.py  # Or: python3 dataset/test_server_connectivity.py
