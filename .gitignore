@@ -39,10 +39,10 @@ static/
 media/
 
 # Datasets
-backend/dataset/*.sql
-backend/dataset/*.csv
-backend/dataset/*.xlsx
-backend/dataset/*.zip
+# backend/dataset/*.sql
+# backend/dataset/*.csv
+# backend/dataset/*.xlsx
+# backend/dataset/*.zip
 
 # Frontend / Node
 frontend/node_modules/
