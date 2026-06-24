@@ -112,7 +112,7 @@ export interface Application {
 }
 
 export interface CareerCluster {
-  id: number;
+  id: string;
   onet_code?: string;
   name: string;
   description: string;
