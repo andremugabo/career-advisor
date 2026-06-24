@@ -22,7 +22,7 @@ class MatchResultSerializer(serializers.ModelSerializer):
 
 class CareerRecommendationSerializer(serializers.Serializer):
     career_name = serializers.CharField(source='title')
-    career_id = serializers.IntegerField()
+    career_id = serializers.UUIDField()
     onet_code = serializers.CharField()
     title = serializers.CharField()
     match_percentage = serializers.FloatField()
