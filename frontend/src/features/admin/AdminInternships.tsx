@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Button, Pagination } from '../../components';
 import { adminService } from '../../services';
 import { notify } from '../../lib/toast';
-import { Briefcase, Trash2, Plus, Users, Building, ExternalLink } from 'lucide-react';
+import { Briefcase, Trash2, Plus, Users, Building, ExternalLink, Download, Search, Filter } from 'lucide-react';
 
 export default function AdminInternships() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -15,20 +15,30 @@ export default function AdminInternships() {
   const [appsPage, setAppsPage] = useState(1);
   const [appsTotal, setAppsTotal] = useState(0);
   
+  // Application Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  
   // Form State for new internship
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({ title: '', company: '', location: '', description: '', url: '' });
 
   useEffect(() => {
     fetchData();
-  }, [internshipsPage, appsPage]);
+  }, [internshipsPage, appsPage, searchTerm, statusFilter, dateFilter]);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      const appFilters = {
+        search: searchTerm,
+        status: statusFilter,
+        month: dateFilter
+      };
       const [internData, appData] = await Promise.all([
         adminService.getInternships(internshipsPage),
-        adminService.getApplications(appsPage)
+        adminService.getApplications(appsPage, appFilters)
       ]);
       setInternships(internData.results || []);
       setInternshipsTotal(internData.count || 0);
@@ -65,6 +75,16 @@ export default function AdminInternships() {
     }
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const appFilters = { search: searchTerm, status: statusFilter, month: dateFilter };
+      await adminService.exportApplicationsPdf(appFilters);
+      notify.success('PDF Exported Successfully!');
+    } catch (error: any) {
+      notify.error(error.message || 'Failed to export PDF.');
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       
@@ -75,7 +95,47 @@ export default function AdminInternships() {
             <Users className="w-5 h-5 text-[#19A7CE]" />
             Global Student Applications
           </h3>
+          <Button onClick={handleExportPDF} className="bg-[#146C94] hover:bg-[#19A7CE] flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export PDF Report
+          </Button>
         </div>
+        
+        {/* Filters */}
+        <div className="flex items-center gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Search by student, internship, or company..." 
+              className="w-full pl-9 pr-4 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:border-[#19A7CE]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="relative">
+            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+            <select 
+              className="pl-9 pr-8 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:border-[#19A7CE] appearance-none bg-white"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Shortlisted">Shortlisted</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div>
+            <input 
+              type="month" 
+              className="px-4 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:border-[#19A7CE] text-slate-600"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              max={new Date().toISOString().slice(0, 7)}
+            />
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

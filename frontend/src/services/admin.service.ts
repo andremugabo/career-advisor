@@ -68,8 +68,36 @@ export const adminService = {
   },
   
   // Applications Tracking
-  getApplications: async (page = 1) => {
-    return apiFetch<PaginatedResponse<any>>(`/applications/?page=${page}`);
+  getApplications: async (page = 1, filters: Record<string, string> = {}) => {
+    const queryParams = new URLSearchParams({ page: String(page) });
+    if (filters.search) queryParams.append('search', filters.search);
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.month) queryParams.append('month', filters.month);
+    return apiFetch<PaginatedResponse<any>>(`/applications/?${queryParams.toString()}`);
+  },
+
+  exportApplicationsPdf: async (filters: Record<string, string> = {}) => {
+    const queryParams = new URLSearchParams();
+    if (filters.search) queryParams.append('search', filters.search);
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.month) queryParams.append('month', filters.month);
+    
+    const url = `${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000/api'}/applications/export-pdf/?${queryParams.toString()}`;
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to export PDF');
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'admin_applications_report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(blobUrl);
   },
 
   // Analytics
