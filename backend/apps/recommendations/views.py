@@ -198,51 +198,114 @@ class RecommendationViewSet(viewsets.ViewSet):
         
         from django.http import HttpResponse
         import io
+        from datetime import datetime
         try:
             from reportlab.lib.pagesizes import letter
-            from reportlab.pdfgen import canvas
             from reportlab.lib import colors
+            from reportlab.lib.colors import HexColor
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
         except ImportError:
             return Response({"error": "reportlab is not installed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
-
-        # Enhanced PDF styling with colors
-        from reportlab.lib import colors
-        p.setFont("Helvetica-Bold", 16)
-        p.setFillColor(colors.darkblue)
-        p.drawString(100, height - 80, f"Career Recommendations Report")
-        p.setFillColor(colors.black)
-        p.setFont("Helvetica", 12)
-        p.drawString(100, height - 100, f"Student: {student.full_name}")
-        p.drawString(100, height - 120, f"Registration Number: {student.reg_number}")
-        # Header bar with background color
-        p.setFillColor(colors.lightgrey)
-        p.rect(95, height - 130, width - 190, 30, fill=1, stroke=0)
-        p.setFillColor(colors.darkblue)
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(100, height - 120, "Career Recommendations")
-
-        y_pos = height - 160
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        color_dark_blue = HexColor("#146C94")
+        color_med_blue = HexColor("#19A7CE")
+        color_light_blue = HexColor("#AFD3E2")
+        
+        # Styles
+        title_style = ParagraphStyle(
+            name="ReportTitle",
+            parent=styles["Heading1"],
+            fontSize=24,
+            textColor=color_dark_blue,
+            spaceAfter=6,
+        )
+        subtitle_style = ParagraphStyle(
+            name="ReportSubtitle",
+            parent=styles["Normal"],
+            fontSize=14,
+            textColor=colors.gray,
+            spaceAfter=20,
+        )
+        body_style = styles["Normal"]
+        
+        # Header
+        elements.append(Paragraph("<b>Emmerence AI</b> Career Path Advisor", title_style))
+        elements.append(Paragraph("Personalized Career Recommendations Report", subtitle_style))
+        elements.append(Spacer(1, 10))
+        
+        # Student Info Card
+        student_data = [
+            ["Student Name:", student.full_name],
+            ["Registration No:", student.reg_number],
+            ["Generated On:", datetime.now().strftime("%Y-%m-%d %H:%M")]
+        ]
+        student_table = Table(student_data, colWidths=[2*inch, 4*inch])
+        student_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), color_light_blue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.white),
+        ]))
+        elements.append(student_table)
+        elements.append(Spacer(1, 30))
+        
+        elements.append(Paragraph("<b>Your Top Career Matches</b>", ParagraphStyle(name="MatchesTitle", parent=styles["Heading2"], textColor=color_dark_blue, spaceAfter=15)))
+        
+        # Recommendations Loop
         for idx, rec in enumerate(recommendations):
-            p.setFont("Helvetica-Bold", 14)
-            p.drawString(100, y_pos, f"{idx + 1}. {rec.get('career_name') or rec.get('title', 'Unknown')}")
-            y_pos -= 20
-            p.setFont("Helvetica", 12)
-            p.drawString(120, y_pos, f"Match: {rec.get('match_percentage', 0)}%")
-            y_pos -= 20
-            missing_skills = ", ".join(rec.get('missing_skills', []))
-            p.drawString(120, y_pos, f"Missing Skills: {missing_skills if missing_skills else 'None'}")
-            y_pos -= 40
+            title = rec.get('career_name') or rec.get('title', 'Unknown')
+            match_pct = f"{rec.get('match_percentage', 0)}%"
             
-            if y_pos < 100:
-                p.showPage()
-                y_pos = height - 80
-
-        p.showPage()
-        p.save()
+            # Header row for career
+            header_data = [[f"{idx + 1}. {title}", f"Match: {match_pct}"]]
+            header_table = Table(header_data, colWidths=[5.5*inch, 1.5*inch])
+            header_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), color_med_blue),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+                ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('LEFTPADDING', (0, 0), (-1, -1), 10),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ]))
+            
+            missing_skills = ", ".join(rec.get('missing_skills', []))
+            details_text = f"<b>Missing Skills:</b> {missing_skills if missing_skills else 'None'}"
+            details_para = Paragraph(details_text, body_style)
+            details_data = [[details_para]]
+            details_table = Table(details_data, colWidths=[7*inch])
+            details_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), HexColor("#F8FAFC")),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 10),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ]))
+            
+            elements.append(header_table)
+            elements.append(details_table)
+            elements.append(Spacer(1, 15))
+            
+        doc.build(elements)
         buffer.seek(0)
         
         # Log export
