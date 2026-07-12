@@ -66,8 +66,8 @@ class Command(BaseCommand):
         )
 
         internship, _ = Internship.objects.get_or_create(
-            company_name='Stripe',
-            role_name='E2E Developer Intern',
+            company='Stripe',
+            title='E2E Developer Intern',
             defaults={
                 'requirements': 'Python, Django knowledge',
                 'deadline': '2026-12-31',
