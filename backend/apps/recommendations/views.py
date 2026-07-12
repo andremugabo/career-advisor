@@ -199,11 +199,12 @@ class RecommendationViewSet(viewsets.ViewSet):
         from django.http import HttpResponse
         import io
         from datetime import datetime
+        import os
         try:
             from reportlab.lib.pagesizes import letter
             from reportlab.lib import colors
             from reportlab.lib.colors import HexColor
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch
         except ImportError:
@@ -236,8 +237,24 @@ class RecommendationViewSet(viewsets.ViewSet):
         body_style = styles["Normal"]
         
         # Header
-        elements.append(Paragraph("<b>Emmerence AI</b> Career Path Advisor", title_style))
-        elements.append(Paragraph("Personalized Career Recommendations Report", subtitle_style))
+        logo_path = "/Users/ntgr/Desktop/This.Mac/MYPROJECT/EMMERENCE/career-advisor/frontend/public/logo.png"
+        
+        title_p = Paragraph("<b>Emmerence AI</b> Career Path Advisor", title_style)
+        subtitle_p = Paragraph("Personalized Career Recommendations Report", subtitle_style)
+        
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=1.5*inch, height=1.5*inch, kind='proportional')
+            header_table = Table([[logo, [title_p, subtitle_p]]], colWidths=[1.6*inch, 5*inch])
+            header_table.setStyle(TableStyle([
+                ('ALIGN', (0,0), (0,0), 'LEFT'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('ALIGN', (1,0), (1,0), 'LEFT'),
+            ]))
+            elements.append(header_table)
+        else:
+            elements.append(title_p)
+            elements.append(subtitle_p)
+            
         elements.append(Spacer(1, 10))
         
         # Student Info Card
