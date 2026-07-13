@@ -237,7 +237,7 @@ class RecommendationViewSet(viewsets.ViewSet):
         body_style = styles["Normal"]
         
         # Header
-        logo_path = "/Users/ntgr/Desktop/This.Mac/MYPROJECT/EMMERENCE/career-advisor/frontend/public/logo.png"
+        logo_path = str(settings.BASE_DIR.parent / "frontend" / "public" / "logo.png")
         
         title_p = Paragraph("<b>Emmerence AI</b> Career Path Advisor", title_style)
         subtitle_p = Paragraph("Personalized Career Recommendations Report", subtitle_style)
