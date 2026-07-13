@@ -108,8 +108,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             textColor=colors.gray,
             spaceAfter=20,
         )
+        from django.conf import settings
         
-        logo_path = "/Users/ntgr/Desktop/This.Mac/MYPROJECT/EMMERENCE/career-advisor/frontend/public/logo.png"
+        logo_path = str(settings.BASE_DIR.parent / "frontend" / "public" / "logo.png")
         
         title_p = Paragraph("<b>Emmerence AI</b> Administrator Panel", title_style)
         subtitle_p = Paragraph(f"Student Applications Report | Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", subtitle_style)
